@@ -62,13 +62,19 @@ body {
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
 .field {
   display: grid;
   gap: 6px;
+  min-width: 0;
+}
+
+.field select {
+  width: 100%;
+  min-width: 0;
 }
 
 .field-label {
@@ -575,7 +581,7 @@ input {
   }
 
   .form-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .problem-text {

@@ -1,6 +1,6 @@
 try {
 const common = window.TomoCommon;
-if (!common) throw new Error("common.v2.js が読み込めませんでした");
+if (!common) throw new Error("common.js が読み込めませんでした");
 
 const { $, toHalfWidthDigits, randInt, pickOne, beep } = common;
 
@@ -313,6 +313,7 @@ if (numpad) {
     const btn = e.target && e.target.closest ? e.target.closest("button") : null;
     if (!btn) return;
 
+    if (state.locked) return;
     const action = btn.getAttribute("data-action");
     const value = btn.getAttribute("data-value");
 
@@ -328,32 +329,6 @@ if (numpad) {
     if (value && /^(?:[0-9])$/.test(value)) {
       activeInput.value = String(activeInput.value || "") + value;
       dispatchInput(activeInput);
-      if (activeInput === tateInput) {
-        const q = state.q;
-        const need = q ? String(q.tate).length : 2;
-        if (tateInput.value.length < need) return;
-
-        // たてが入ったら右へ
-        yokoInput.focus();
-        activeInput = yokoInput;
-      }
-
-      if (activeInput === yokoInput) {
-        const q = state.q;
-        const need = q ? String(q.yoko).length : 2;
-        if (yokoInput.value.length < need) return;
-
-        areaInput.focus();
-        activeInput = areaInput;
-      }
-
-      if (activeInput === areaInput) {
-        const q = state.q;
-        const need = q ? String(q.tate * q.yoko).length : 4;
-        if (areaInput.value.length < need) return;
-
-        maybeJudge();
-      }
     }
   });
 }

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<title>算数アプリ 動作確認</title>
+<pre id="report">実行中…</pre>
+<script>
+const report = document.getElementById("report");
+const results = [];
+const pause = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+function assert(value, message) { if (!value) throw new Error(message); }
+async function openPage(name, width = 375) {
+  const frame = document.createElement("iframe");
+  frame.style.cssText = `width:${width}px;height:900px;border:0`;
+  frame.src = `../${name}.html`;
+  const loaded = new Promise(resolve => frame.onload = resolve);
+  document.body.append(frame);
+  await loaded;
+  const d = frame.contentDocument;
+  assert(!d.getElementById("fatalError"), `${name}: 起動エラー`);
+  return { frame, d, $: id => d.getElementById(id) };
+}
+function input(page, id, value) {
+  const el = page.$(id);
+  el.value = String(value);
+  el.dispatchEvent(new page.frame.contentWindow.Event("input", { bubbles: true }));
+}
+function keypad(page, value) {
+  for (const digit of String(value)) page.d.querySelector(`[data-value="${digit}"]`).click();
+}
+function answer(text) {
+  const [a, b] = text.match(/\d+/g).map(Number);
+  return text.includes("×") ? a * b : text.includes("÷") ? a / b : text.includes("−") ? a - b : a + b;
+}
+function noOverflow(page, width) {
+  const bad = [...page.d.querySelectorAll("body *")].filter(el => {
+    const box = el.getBoundingClientRect();
+    return box.width && (box.right > width + 1 || box.left < -1);
+  });
+  assert(!bad.length, `幅${width}: ${bad.map(el => el.id || el.className).join(",")} がはみ出す`);
+}
+async function timed(name, options = {}) {
+  const p = await openPage(name);
+  for (const [id, value] of Object.entries(options)) p.$(id).value = value;
+  p.$("startBtn").click();
+  input(p, "answerInput", 99999);
+  assert(p.$("mistakes").textContent === "1", "ミスを1回カウント");
+  keypad(p, answer(p.$("problemText").textContent));
+  p.$("submitBtn").click();
+  p.$("restartBtn").click();
+  await pause(300);
+  assert(p.$("progress").textContent.startsWith("1 /"), "再スタート時に古い遷移をキャンセル");
+  const count = Number(p.$("progress").textContent.split("/")[1]);
+  const seen = new Set();
+  for (let i = 0; i < count; i++) {
+    const text = p.$("problemText").textContent;
+    seen.add(text);
+    assert(p.$("progress").textContent === `${i + 1} / ${count}`, "進捗");
+    if (i === 0) {
+      const value = String(answer(text));
+      input(p, "answerInput", value.replace(/[0-9]/g, x => String.fromCharCode(x.charCodeAt(0) + 0xfee0)));
+    } else keypad(p, answer(text));
+    p.$("submitBtn").click();
+    await pause(250);
+  }
+  assert(!p.$("screen-result").classList.contains("hidden"), "最後まで完了");
+  assert(p.$("resultDetail").textContent === "ミス 0", "二重採点や余分なミスなし");
+  if (name === "time-attack-kuku") assert(seen.size === 20, "九九の重複なし");
+  p.$("againBtn").click();
+  assert(p.$("progress").textContent.startsWith("1 /"), "もういちど");
+  p.frame.remove();
+}
+async function practice() {
+  const p = await openPage("practice");
+  p.$("grade").value = "3";
+  for (const id of ["opAdd", "opSub", "opMul", "opDiv"]) p.$(id).checked = true;
+  p.$("questionCount").value = "10";
+  p.$("startBtn").click();
+  keypad(p, answer(p.$("problemText").textContent));
+  p.$("submitBtn").click();
+  p.$("submitBtn").click();
+  p.$("restartBtn").click();
+  await pause(700);
+  assert(p.$("statusProgress").textContent === "1 / 10", "通常練習の古い遷移キャンセル");
+  for (let i = 0; i < 10; i++) {
+    keypad(p, answer(p.$("problemText").textContent) + (i === 0 ? 1 : 0));
+    p.$("submitBtn").click();
+    p.$("submitBtn").click();
+    await pause(700);
+  }
+  assert(p.$("resultScore").textContent === "90", "連打しても正しいスコア");
+  assert(p.$("mistakeList").children.length === 1, "間違えた問題の振り返り");
+  p.$("backBtn").click();
+  assert(!p.$("screen-setup").classList.contains("hidden"), "設定に戻る");
+  p.frame.remove();
+}
+async function column() {
+  const p = await openPage("time-attack-column-2digit");
+  p.$("mode").value = "mix";
+  p.$("startBtn").click();
+  const a = Number(p.$("rowTop").textContent.trim());
+  const bottom = p.$("rowBottom").textContent;
+  const b = Number(bottom.match(/\d+/)[0]);
+  const add = bottom.includes("+");
+  if (add ? a % 10 + b % 10 >= 10 : a % 10 < b % 10) p.$(add ? "carryPlusBtn" : "carryMinusBtn").click();
+  const value = add ? a + b : a - b;
+  keypad(p, value % 10);
+  assert(p.d.activeElement === p.$("ansTens"), "1の位から10の位へ移動");
+  keypad(p, Math.floor(value / 10));
+  p.$("restartBtn").click();
+  await pause(300);
+  assert(p.$("progress").textContent === "1 / 20", "筆算の再スタート");
+  await finishColumn(p);
+}
+async function finishColumn(p) {
+  for (let i = 0; i < 20; i++) {
+    const a = Number(p.$("rowTop").textContent.trim());
+    const bottom = p.$("rowBottom").textContent;
+    const b = Number(bottom.match(/\d+/)[0]);
+    const add = bottom.includes("+");
+    if (add ? a % 10 + b % 10 >= 10 : a % 10 < b % 10) p.$(add ? "carryPlusBtn" : "carryMinusBtn").click();
+    const value = add ? a + b : a - b;
+    keypad(p, value % 10);
+    keypad(p, Math.floor(value / 10));
+    await pause(300);
+  }
+  assert(!p.$("screen-result").classList.contains("hidden"), "筆算を完了");
+  assert(p.$("resultDetail").textContent === "ミス 0", "筆算の採点");
+  p.frame.remove();
+}
+async function area(mode) {
+  const p = await openPage("area-rectangle");
+  p.$("unitMode").value = mode;
+  p.$("count").value = "10";
+  p.$("startBtn").click();
+  for (let i = 0; i < 10; i++) {
+    const t = Number(p.$("labelTate").textContent.match(/\d+/)[0]);
+    const y = Number(p.$("labelYoko").textContent.match(/\d+/)[0]);
+    keypad(p, t);
+    assert(p.d.activeElement === p.$("yokoInput"), "縦から横へ移動");
+    keypad(p, y);
+    assert(p.d.activeElement === p.$("areaInput"), "横から面積へ移動");
+    keypad(p, t * y);
+    assert(!p.$("resultBox").classList.contains("hidden"), "面積の正解表示");
+    keypad(p, "123");
+    assert(p.$("okCount").textContent === String(i + 1), "正解後の入力を無視");
+    p.$("nextBtn").click();
+  }
+  assert(p.$("resultSummary").textContent === "10", "面積を完了");
+  p.frame.remove();
+}
+async function unavailableStorage() {
+  const p = await openPage("practice");
+  const html = p.d.documentElement.outerHTML;
+  const base = new URL("../", location.href).href;
+  const ready = new Promise(resolve => p.frame.onload = resolve);
+  p.frame.srcdoc = html.replace("<head>", `<head><base href="${base}"><script>Object.defineProperty(window, "localStorage", { get() { throw new Error("Storage blocked"); } });<` + "/script>");
+  await ready;
+  const d = p.frame.contentDocument;
+  assert(!d.getElementById("fatalError"), "保存が使えなくても起動");
+  d.getElementById("startBtn").click();
+  assert(!d.getElementById("screen-quiz").classList.contains("hidden"), "保存が使えなくても開始");
+  p.frame.remove();
+}
+async function layouts() {
+  for (const width of [320, 360, 375, 390, 414, 540, 768]) {
+    for (const name of ["index", "practice", "time-attack-addsub", "time-attack-kuku", "time-attack-mix-add-kuku", "time-attack-column-2digit", "area-rectangle"]) {
+      const p = await openPage(name, width);
+      noOverflow(p, width);
+      if (p.$("startBtn")) { p.$("startBtn").click(); noOverflow(p, width); }
+      p.frame.remove();
+    }
+  }
+}
+(async () => {
+  const checks = [
+    ["全ページの表示（320〜768px）", layouts],
+    ["たし算20問", () => timed("time-attack-addsub", { mode: "add", count: "20", zero: "none" })],
+    ["ひき算30問", () => timed("time-attack-addsub", { mode: "sub", count: "30", difficulty: "2", zero: "many" })],
+    ["たしひき混合45問", () => timed("time-attack-addsub", { mode: "mix", count: "45", difficulty: "3" })],
+    ["九九20問", () => timed("time-attack-kuku")],
+    ["たし算＋九九20問", () => timed("time-attack-mix-add-kuku")],
+    ["通常練習・連打・振り返り", practice],
+    ["設定保存が使えない環境", unavailableStorage],
+    ["筆算・繰り上がり・繰り下がり", column],
+    ["面積cm", () => area("cm")],
+    ["面積m", () => area("m")],
+  ];
+  for (const [name, run] of checks) {
+    try { await run(); results.push(`PASS ${name}`); }
+    catch (error) { results.push(`FAIL ${name}: ${error.message}`); }
+    report.textContent = results.join("\n");
+  }
+  document.title = results.some(x => x.startsWith("FAIL")) ? "FAIL" : "PASS";
+})();
+</script>
+</html>

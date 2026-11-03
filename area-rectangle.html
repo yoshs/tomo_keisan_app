@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>四角形の面積（たて×よこ）</title>
-    <link rel="stylesheet" href="./styles.css?v=20261103-area-inputs" />
+    <link rel="stylesheet" href="./styles.css?v=20261103-opt1" />
   </head>
   <body>
     <main class="container">
@@ -140,7 +140,7 @@
         </div>
 
         <div id="numpad" class="numpad" aria-label="テンキー">
-          <div class="numpad-grid" aria-hidden="true">
+          <div class="numpad-grid" >
             <button type="button" class="numpad-key" data-value="1">1</button>
             <button type="button" class="numpad-key" data-value="2">2</button>
             <button type="button" class="numpad-key" data-value="3">3</button>
@@ -192,15 +192,15 @@
         }
       }
     </script>
-    <script src="./common.v2.js" onerror="__scriptLoadError('common.v2.js')"></script>
+    <script src="./common.js?v=20261103-opt1" onerror="__scriptLoadError('common.js')"></script>
     <script>
       if (!window.TomoCommon) {
         document.body.insertAdjacentHTML(
           "afterbegin",
-          '<div style="margin:12px; padding:10px 12px; border-radius:12px; background:#ffecec; border:1px solid #ffbdbd; color:#7a1f1f; font-weight:700;">ERROR: common.v2.js を読み込めませんでした。<br/>ヒント: file:// で開いている場合は、ローカルサーバ（python / ruby / php）で開くと直ることがあります。</div>'
+          '<div style="margin:12px; padding:10px 12px; border-radius:12px; background:#ffecec; border:1px solid #ffbdbd; color:#7a1f1f; font-weight:700;">ERROR: common.js を読み込めませんでした。<br/>ヒント: file:// で開いている場合は、ローカルサーバ（python / ruby / php）で開くと直ることがあります。</div>'
         );
       }
     </script>
-    <script src="./area-rectangle.v2.js" onerror="__scriptLoadError('area-rectangle.v2.js')"></script>
+    <script src="./area-rectangle.js?v=20261103-opt1" onerror="__scriptLoadError('area-rectangle.js')"></script>
   </body>
 </html>

@@ -19,15 +19,33 @@
 
 ## ページ
 
-- `time-attack-addsub.html` ① たし算/ひき算（45もん）
-- `time-attack-kuku.html` ② 九九（45もん）
-- `time-attack-mix-add-kuku.html` ③ たし算 + 九九（45もん）
-- `time-attack-column-2digit.html` ④ 2けたの筆算（45もん、答えは10の位/1の位で入力）
+- `time-attack-addsub.html` ① たし算/ひき算（20/30/45もん）
+- `time-attack-kuku.html` ② 九九（20もん）
+- `time-attack-mix-add-kuku.html` ③ たし算 + 九九（20もん）
+- `time-attack-column-2digit.html` ④ 2けたの筆算（20もん、1の位→10の位で入力。くり上がり・くり下がりも判定）
 - `practice.html` れんしゅう（ふつうモード）
+- `area-rectangle.html` 四角形の面積（cm / m、10/20/30もん・むげん）
 
 ## ファイル
 
 - `index.html` メニュー
 - `styles.css` デザイン
 - `app.js` もんだい生成・採点ロジック
-- `common.js` タイムアタック共通ユーティリティ
+- `common.js` 全モード共通のテンキー・音声・タイマー・画面遷移予約
+- `timed-quiz.js` たし算/ひき算・九九・混合タイムアタックの共通処理
+- `time-attack-*.js` 各タイムアタックの問題生成、筆算の入力・採点
+- `area-rectangle.js` 面積の問題生成・入力・採点
+
+同じ実装を持つ `.v2.js` は通常の `.js` に統一しています。
+HTML内のCSS/JS URLには版番号を付けています。配信内容を更新するときは、
+関連するURLの `?v=` も更新し、ブラウザに古いファイルが残るのを防ぎます。
+
+## 動作確認
+
+`python3 -m http.server 8000` をこのフォルダで実行し、
+`http://localhost:8000/tests/browser.html` をブラウザで開いてください。
+外部ライブラリのインストールは不要です。
+
+全モードの完走、採点、連打、再スタート、画面テンキーのフォーカス移動、
+設定保存が使えない場合、320〜768px幅の全ページ表示を自動確認します。
+結果は画面に `PASS` / `FAIL` で表示されます。

@@ -10,10 +10,12 @@ const {
   formatMs,
   startTicker,
   nowMs,
-  beep
+  beep,
+  createTransition
 } = common;
 
 const QUESTION_COUNT = 20;
+const transition = createTransition();
 
 const screens = {
   setup: $("screen-setup"),
@@ -101,6 +103,8 @@ const state = {
   mistakes: 0,
   startMs: 0,
   stopTick: null,
+  active: false,
+  locked: false,
 };
 
 let carryAnswer = 0; // -1 / 0 / +1
@@ -173,6 +177,7 @@ function startTimer() {
 }
 
 function finish() {
+  state.active = false;
   stopTimer();
   const elapsed = nowMs() - state.startMs;
   resultTime.textContent = formatMs(elapsed);
@@ -214,7 +219,7 @@ function parseAnswer() {
 }
 
 function submit() {
-  if (state.locked) return;
+  if (!state.active || state.locked) return;
 
   const parsed = parseAnswer();
   if (!parsed.ok) {
@@ -231,7 +236,7 @@ function submit() {
     feedback.textContent = "せいかい！";
     feedback.classList.add("ok");
     beep(true);
-    window.setTimeout(() => {
+    transition.schedule(() => {
       if (state.index + 1 >= QUESTION_COUNT) {
         finish();
         return;
@@ -256,7 +261,7 @@ function submit() {
 }
 
 function maybeAutoSubmit() {
-  if (state.locked) return;
+  if (!state.active || state.locked) return;
   if (!ansOnes.value) return;
   if (!ansTens.value) return;
   submit();
@@ -271,9 +276,11 @@ function normalizeDigitInput(el) {
 }
 
 function start() {
+  transition.cancel();
   const mode = String(modeSelect.value);
 
   state.questions = createSet(mode);
+  state.active = true;
   state.index = 0;
   state.mistakes = 0;
   timerEl.textContent = "0:00.00";
@@ -299,13 +306,6 @@ answerInputs.forEach((el) => {
 
 function dispatchInput(el) {
   el.dispatchEvent(new Event("input", { bubbles: true }));
-}
-
-function moveNext(el) {
-  if (el === ansOnes) {
-    ansTens.focus();
-    return;
-  }
 }
 
 function clearAllAnswers() {
@@ -340,9 +340,10 @@ function backspaceActive() {
 
 function setDigitToActive(digit) {
   if (!activeInput) return;
-  activeInput.value = String(digit);
-  dispatchInput(activeInput);
-  moveNext(activeInput);
+  if (!state.active || state.locked) return;
+  const input = activeInput;
+  input.value = String(digit);
+  dispatchInput(input);
 }
 
 if (numpad) {
@@ -414,6 +415,8 @@ restartBtn.addEventListener("click", start);
 againBtn.addEventListener("click", start);
 if (submitBtn) submitBtn.addEventListener("click", submit);
 
+window.addEventListener("pagehide", () => { transition.cancel(); stopTimer(); state.active = false; });
+window.addEventListener("pageshow", (event) => { if (event.persisted) showScreen("setup"); });
 showScreen("setup");
 
 } catch (err) {
