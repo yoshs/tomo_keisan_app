@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>四角形の面積（たて×よこ）</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1 class="title">四角形の面積</h1>
+        <p class="subtitle">たて × よこ（cm / m）</p>
+        <nav class="top-nav">
+          <a class="link" href="./index.html">メニューへ</a>
+        </nav>
+      </header>
+
+      <section id="screen-setup" class="card">
+        <h2 class="card-title">もんだいを えらぶ</h2>
+
+        <div class="form-grid">
+          <label class="field">
+            <span class="field-label">たんい</span>
+            <select id="unitMode">
+              <option value="mix">cm と m（まぜる）</option>
+              <option value="cm">cm だけ</option>
+              <option value="m">m だけ</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">もんだい数</span>
+            <select id="count">
+              <option value="10">10もん</option>
+              <option value="20" selected>20もん</option>
+              <option value="30">30もん</option>
+              <option value="0">むげん</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="startBtn" class="btn btn-primary">スタート</button>
+        </div>
+        <p class="hint">図形を見て、たて × よこ と 面積（cm² / m²）を入れてね</p>
+      </section>
+
+      <section id="screen-quiz" class="card hidden" aria-live="polite">
+        <div class="status-row">
+          <div class="status">
+            <span id="progress">1 / 20</span>
+            <span class="dot">•</span>
+            <span>せいかい <span id="okCount">0</span></span>
+            <span class="dot">•</span>
+            <span>ミス <span id="ngCount">0</span></span>
+          </div>
+          <button id="restartBtn" class="btn btn-ghost">やりなおし</button>
+        </div>
+
+        <div class="problem">
+          <div class="rect-wrap" aria-label="四角形">
+            <svg id="rectSvg" class="rect-svg" viewBox="0 0 320 220" role="img" aria-label="四角形の図">
+              <rect x="70" y="40" width="200" height="140" rx="8" ry="8" class="rect-shape" />
+              <line x1="70" y1="190" x2="270" y2="190" class="rect-measure" />
+              <line x1="60" y1="40" x2="60" y2="180" class="rect-measure" />
+              <text id="labelYoko" x="170" y="212" text-anchor="middle" class="rect-label">よこ</text>
+              <text id="labelTate" x="14" y="112" text-anchor="middle" class="rect-label" transform="rotate(-90 14 112)">たて</text>
+            </svg>
+          </div>
+
+          <div class="formula" aria-label="式入力">
+            <div class="formula-title">しき</div>
+            <div class="formula-row">
+              <div class="formula-cell">
+                <div class="formula-caption">たて</div>
+                <input
+                  id="tateInput"
+                  class="answer-input"
+                  type="tel"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="2"
+                  autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  aria-label="たて"
+                />
+              </div>
+              <div class="formula-x" aria-hidden="true">×</div>
+              <div class="formula-cell">
+                <div class="formula-caption">よこ</div>
+                <input
+                  id="yokoInput"
+                  class="answer-input"
+                  type="tel"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="2"
+                  autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  aria-label="よこ"
+                />
+              </div>
+              <div class="formula-unit" aria-label="たんい">
+                <span id="unitLabel">cm</span>
+              </div>
+            </div>
+
+            <div class="formula-row-area" aria-label="面積入力">
+              <div class="formula-cell">
+                <div class="formula-caption">めんせき</div>
+                <div class="area-input-row">
+                  <input
+                    id="areaInput"
+                    class="answer-input"
+                    type="tel"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="4"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    aria-label="面積"
+                  />
+                  <span class="area-unit" aria-label="面積のたんい"><span id="areaUnitLabel">cm²</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="resultBox" class="area-result hidden" aria-live="polite"></div>
+        </div>
+
+        <div id="numpad" class="numpad" aria-label="テンキー">
+          <div class="numpad-grid" aria-hidden="true">
+            <button type="button" class="numpad-key" data-value="1">1</button>
+            <button type="button" class="numpad-key" data-value="2">2</button>
+            <button type="button" class="numpad-key" data-value="3">3</button>
+            <button type="button" class="numpad-key" data-value="4">4</button>
+            <button type="button" class="numpad-key" data-value="5">5</button>
+            <button type="button" class="numpad-key" data-value="6">6</button>
+            <button type="button" class="numpad-key" data-value="7">7</button>
+            <button type="button" class="numpad-key" data-value="8">8</button>
+            <button type="button" class="numpad-key" data-value="9">9</button>
+            <button type="button" class="numpad-key numpad-fn" data-action="clear">けす</button>
+            <button type="button" class="numpad-key" data-value="0">0</button>
+            <button type="button" class="numpad-key numpad-fn" data-action="backspace">←</button>
+          </div>
+        </div>
+
+        <p id="feedback" class="feedback" aria-live="assertive"></p>
+      </section>
+
+      <section id="screen-result" class="card hidden">
+        <h2 class="card-title">けっか</h2>
+        <div class="result-summary">
+          <div class="result-big"><span id="resultSummary">0</span><span class="result-unit">もん せいかい</span></div>
+          <div class="result-small" id="resultDetail">ミス 0</div>
+        </div>
+
+        <div class="actions">
+          <button id="againBtn" class="btn btn-primary">もういちど</button>
+          <a class="btn btn-ghost" href="./index.html">メニューへ</a>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <small>※「同じくらいの大きさ」はだいたい（目安）です</small>
+      </footer>
+    </main>
+
+    <script>
+      function __scriptLoadError(name) {
+        try {
+          document.body.insertAdjacentHTML(
+            "afterbegin",
+            '<div style="margin:12px; padding:10px 12px; border-radius:12px; background:#ffecec; border:1px solid #ffbdbd; color:#7a1f1f; font-weight:700;">ERROR: ' +
+              name +
+              " の読み込みに失敗しました。" +
+              "<br/>ヒント: file:// で開いている場合は、ローカルサーバで開くと直ることがあります。</div>"
+          );
+        } catch (e) {
+          // ignore
+        }
+      }
+    </script>
+    <script src="./common.v2.js" onerror="__scriptLoadError('common.v2.js')"></script>
+    <script>
+      if (!window.TomoCommon) {
+        document.body.insertAdjacentHTML(
+          "afterbegin",
+          '<div style="margin:12px; padding:10px 12px; border-radius:12px; background:#ffecec; border:1px solid #ffbdbd; color:#7a1f1f; font-weight:700;">ERROR: common.v2.js を読み込めませんでした。<br/>ヒント: file:// で開いている場合は、ローカルサーバ（python / ruby / php）で開くと直ることがあります。</div>'
+        );
+      }
+    </script>
+    <script src="./area-rectangle.v2.js" onerror="__scriptLoadError('area-rectangle.v2.js')"></script>
+  </body>
+</html>

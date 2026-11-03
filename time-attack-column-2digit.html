@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>タイムアタック④ 2けたの筆算（45もん）</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1 class="title">タイムアタック④</h1>
+        <p class="subtitle">2けたの筆算（たし算/ひき算/まぜる）</p>
+        <nav class="top-nav">
+          <a class="link" href="./index.html">メニューへ</a>
+        </nav>
+      </header>
+
+      <section id="screen-setup" class="card">
+        <h2 class="card-title">もんだいを えらぶ</h2>
+        <div class="form-grid">
+          <label class="field">
+            <span class="field-label">しゅつだい</span>
+            <select id="mode">
+              <option value="add">たし算（2けた）</option>
+              <option value="sub">ひき算（2けた）</option>
+              <option value="mix">たし算・ひき算 まぜる（2けた）</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="startBtn" class="btn btn-primary">スタート</button>
+        </div>
+        <p class="hint">こたえ（1の位→10の位）と、くり（+1 / -1）もえらんでね（ないときは 0）</p>
+      </section>
+
+      <section id="screen-quiz" class="card hidden" aria-live="polite">
+        <div class="status-row">
+          <div class="status">
+            <span id="progress">1 / 45</span>
+            <span class="dot">•</span>
+            <span class="timer">⏱ <span id="timer">0:00.00</span></span>
+            <span class="dot">•</span>
+            <span>ミス <span id="mistakes">0</span></span>
+          </div>
+          <button id="restartBtn" class="btn btn-ghost">やりなおし</button>
+        </div>
+
+        <div class="problem column-problem" aria-label="筆算">
+          <div class="carry-row" aria-label="くり上がり/くり下がり">
+            <div class="carry-field" role="group" aria-label="くり上がり/くり下がり 入力">
+              <span id="carryLabel" class="carry-label">くり上がり</span>
+              <div class="carry-buttons">
+                <button id="carryPlusBtn" type="button" class="carry-btn" aria-label="くり上がり +1">+1</button>
+                <button id="carryMinusBtn" type="button" class="carry-btn" aria-label="くり下がり -1">-1</button>
+                <span class="carry-value" aria-label="えらんだ くり" aria-live="polite">いま：<span id="carryValue">0</span></span>
+              </div>
+            </div>
+            <span class="carry-hint">※ないときは 0（そのまま）</span>
+          </div>
+
+          <div class="column-row" id="rowTop"> 34</div>
+          <div class="column-row" id="rowBottom">+56</div>
+          <div class="column-line" aria-hidden="true"></div>
+          <div class="column-answer" aria-label="答え入力">
+            <input
+              id="ansTens"
+              class="digit-input"
+              type="tel"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="1"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              aria-label="10の位"
+            />
+            <input
+              id="ansOnes"
+              class="digit-input"
+              type="tel"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="1"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              aria-label="1の位"
+            />
+          </div>
+        </div>
+
+        <div id="numpad" class="numpad" aria-label="テンキー">
+          <div class="numpad-grid" aria-hidden="true">
+            <button type="button" class="numpad-key" data-value="1">1</button>
+            <button type="button" class="numpad-key" data-value="2">2</button>
+            <button type="button" class="numpad-key" data-value="3">3</button>
+            <button type="button" class="numpad-key" data-value="4">4</button>
+            <button type="button" class="numpad-key" data-value="5">5</button>
+            <button type="button" class="numpad-key" data-value="6">6</button>
+            <button type="button" class="numpad-key" data-value="7">7</button>
+            <button type="button" class="numpad-key" data-value="8">8</button>
+            <button type="button" class="numpad-key" data-value="9">9</button>
+            <button type="button" class="numpad-key numpad-fn" data-action="clear">けす</button>
+            <button type="button" class="numpad-key" data-value="0">0</button>
+            <button type="button" class="numpad-key numpad-fn" data-action="backspace">←</button>
+          </div>
+        </div>
+
+        <p id="feedback" class="feedback" aria-live="assertive"></p>
+      </section>
+
+      <section id="screen-result" class="card hidden">
+        <h2 class="card-title">けっか</h2>
+        <div class="result-summary">
+          <div class="result-big">
+            <span id="resultTime">0:00.00</span>
+            <span class="result-unit">time</span>
+          </div>
+          <div class="result-small" id="resultDetail">ミス 0</div>
+        </div>
+
+        <div class="actions">
+          <button id="againBtn" class="btn btn-primary">もういちど</button>
+          <a class="btn btn-ghost" href="./index.html">メニューへ</a>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <small>答えは2けた（0〜99）にしています</small>
+      </footer>
+    </main>
+
+    <script>
+      function __scriptLoadError(name) {
+        try {
+          document.body.insertAdjacentHTML(
+            "afterbegin",
+            '<div style="margin:12px; padding:10px 12px; border-radius:12px; background:#ffecec; border:1px solid #ffbdbd; color:#7a1f1f; font-weight:700;">ERROR: ' +
+              name +
+              " の読み込みに失敗しました。" +
+              "<br/>ヒント: file:// で開いている場合は、ローカルサーバで開くと直ることがあります。</div>"
+          );
+        } catch (e) {
+          // ignore
+        }
+      }
+    </script>
+    <script src="./common.v2.js" onerror="__scriptLoadError('common.v2.js')"></script>
+    <script>
+      if (!window.TomoCommon) {
+        document.body.insertAdjacentHTML(
+          "afterbegin",
+          '<div style="margin:12px; padding:10px 12px; border-radius:12px; background:#ffecec; border:1px solid #ffbdbd; color:#7a1f1f; font-weight:700;">ERROR: common.v2.js を読み込めませんでした。<br/>ヒント: file:// で開いている場合は、ローカルサーバ（python / ruby / php）で開くと直ることがあります。</div>'
+        );
+      }
+    </script>
+    <script src="./time-attack-column-2digit.v2.js" onerror="__scriptLoadError('time-attack-column-2digit.v2.js')"></script>
+  </body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>タイムアタック② 九九（45もん）</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1 class="title">タイムアタック②</h1>
+        <p class="subtitle">九九を45もん（1〜9だん）</p>
+        <nav class="top-nav">
+          <a class="link" href="./index.html">メニューへ</a>
+        </nav>
+      </header>
+
+      <section id="screen-setup" class="card">
+        <h2 class="card-title">スタート</h2>
+        <p class="hint">Enterキーでも こたえられます。</p>
+        <div class="actions">
+          <button id="startBtn" class="btn btn-primary">スタート</button>
+        </div>
+      </section>
+
+      <section id="screen-quiz" class="card hidden" aria-live="polite">
+        <div class="status-row">
+          <div class="status">
+            <span id="progress">1 / 45</span>
+            <span class="dot">•</span>
+            <span class="timer">⏱ <span id="timer">0:00.00</span></span>
+            <span class="dot">•</span>
+            <span>ミス <span id="mistakes">0</span></span>
+          </div>
+          <button id="restartBtn" class="btn btn-ghost">やりなおし</button>
+        </div>
+
+        <div class="problem">
+          <div id="problemText" class="problem-text">2 × 3 = ?</div>
+        </div>
+
+        <div class="answer-row">
+          <input
+            id="answerInput"
+            type="tel"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            class="answer-input"
+            placeholder="こたえ"
+            aria-label="こたえ"
+          />
+          <button id="submitBtn" class="btn btn-primary">こたえる</button>
+        </div>
+
+        <div id="numpad" class="numpad" aria-label="テンキー">
+          <div class="numpad-grid" aria-hidden="true">
+            <button type="button" class="numpad-key" data-value="1">1</button>
+            <button type="button" class="numpad-key" data-value="2">2</button>
+            <button type="button" class="numpad-key" data-value="3">3</button>
+            <button type="button" class="numpad-key" data-value="4">4</button>
+            <button type="button" class="numpad-key" data-value="5">5</button>
+            <button type="button" class="numpad-key" data-value="6">6</button>
+            <button type="button" class="numpad-key" data-value="7">7</button>
+            <button type="button" class="numpad-key" data-value="8">8</button>
+            <button type="button" class="numpad-key" data-value="9">9</button>
+            <button type="button" class="numpad-key numpad-fn" data-action="clear">けす</button>
+            <button type="button" class="numpad-key" data-value="0">0</button>
+            <button type="button" class="numpad-key numpad-fn" data-action="backspace">←</button>
+          </div>
+        </div>
+
+        <p id="feedback" class="feedback" aria-live="assertive"></p>
+      </section>
+
+      <section id="screen-result" class="card hidden">
+        <h2 class="card-title">けっか</h2>
+        <div class="result-summary">
+          <div class="result-big">
+            <span id="resultTime">0:00.00</span>
+            <span class="result-unit">time</span>
+          </div>
+          <div class="result-small" id="resultDetail">ミス 0</div>
+        </div>
+
+        <div class="actions">
+          <button id="againBtn" class="btn btn-primary">もういちど</button>
+          <a class="btn btn-ghost" href="./index.html">メニューへ</a>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <small>九九のランダム45もん（重複なし）</small>
+      </footer>
+    </main>
+
+    <script>
+      function __scriptLoadError(name) {
+        try {
+          document.body.insertAdjacentHTML(
+            "afterbegin",
+            '<div style="margin:12px; padding:10px 12px; border-radius:12px; background:#ffecec; border:1px solid #ffbdbd; color:#7a1f1f; font-weight:700;">ERROR: ' +
+              name +
+              " の読み込みに失敗しました。" +
+              "<br/>ヒント: file:// で開いている場合は、ローカルサーバで開くと直ることがあります。</div>"
+          );
+        } catch (e) {
+          // ignore
+        }
+      }
+    </script>
+    <script src="./common.v2.js" onerror="__scriptLoadError('common.v2.js')"></script>
+    <script>
+      if (!window.TomoCommon) {
+        document.body.insertAdjacentHTML(
+          "afterbegin",
+          '<div style="margin:12px; padding:10px 12px; border-radius:12px; background:#ffecec; border:1px solid #ffbdbd; color:#7a1f1f; font-weight:700;">ERROR: common.v2.js を読み込めませんでした。<br/>ヒント: file:// で開いている場合は、ローカルサーバ（python / ruby / php）で開くと直ることがあります。</div>'
+        );
+      }
+    </script>
+    <script src="./time-attack-kuku.v2.js" onerror="__scriptLoadError('time-attack-kuku.v2.js')"></script>
+  </body>
+</html>
