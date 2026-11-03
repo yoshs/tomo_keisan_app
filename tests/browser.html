@@ -148,6 +148,36 @@ async function area(mode) {
   assert(p.$("resultSummary").textContent === "10", "面積を完了");
   p.frame.remove();
 }
+async function areaExamples() {
+  const p = await openPage("area-rectangle", 320);
+  const w = p.frame.contentWindow;
+  const originalRandom = w.Math.random;
+  const labels = new Set();
+  for (const unit of ["cm", "m"]) {
+    p.$("unitMode").value = unit;
+    const min = unit === "cm" ? 2 : 1;
+    const range = 10 - min;
+    for (let t = min; t <= 9; t++) {
+      for (let y = min; y <= 9; y++) {
+        const values = [(t - min + 0.5) / range, (y - min + 0.5) / range];
+        w.Math.random = () => values.shift();
+        p.$("startBtn").click();
+        w.Math.random = originalRandom;
+        keypad(p, t); keypad(p, y); keypad(p, t * y);
+        const captions = p.d.querySelectorAll(".area-result-sub");
+        assert(captions.length === 2, "比較対象の寸法を表示");
+        labels.add(captions[0].textContent);
+        const match = captions[1].textContent.match(/= ([0-9.]+) (cm²|m²)/);
+        assert(match && match[2] === (unit === "cm" ? "cm²" : "m²"), "比較の単位");
+        const ratio = t * y / Number(match[1]);
+        assert(ratio >= 0.8 - 1e-9 && ratio <= 1.25 + 1e-9, "比較対象の面積が近い");
+        noOverflow(p, 320);
+      }
+    }
+  }
+  assert(labels.size >= 15, "出題範囲に合う多様な例");
+  p.frame.remove();
+}
 async function unavailableStorage() {
   const p = await openPage("practice");
   const html = p.d.documentElement.outerHTML;
@@ -184,6 +214,7 @@ async function layouts() {
     ["筆算・繰り上がり・繰り下がり", column],
     ["面積cm", () => area("cm")],
     ["面積m", () => area("m")],
+    ["面積の全145通りと大きさの例", areaExamples],
   ];
   for (const [name, run] of checks) {
     try { await run(); results.push(`PASS ${name}`); }

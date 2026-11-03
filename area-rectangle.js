@@ -52,39 +52,47 @@ normalizeDigits(tateInput, 2);
 normalizeDigits(yokoInput, 2);
 normalizeDigits(areaInput, 4);
 
-// ---- comparable sizes (rough guide) ----
-// area_cm2 is the *center* area, range is used for matching.
+// 身近な物の大きさの一例。実物には差があるため、寸法も表示する。
 const COMPARABLES = [
-  { label: "スマホ（だいたい）", unit: "cm", min: 60, max: 180 },
-  { label: "はがき（だいたい）", unit: "cm", min: 100, max: 230 },
-  { label: "A4の紙（だいたい）", unit: "cm", min: 500, max: 800 },
-  { label: "ノート（B5くらい）", unit: "cm", min: 350, max: 650 },
-  { label: "マウスパッド（だいたい）", unit: "cm", min: 350, max: 900 },
-  { label: "まな板（だいたい）", unit: "cm", min: 700, max: 1400 },
-  { label: "学習机の天板（だいたい）", unit: "cm", min: 1800, max: 3500 },
-  { label: "バスタオル（だいたい）", unit: "cm", min: 5000, max: 10000 },
-  { label: "ドア（だいたい）", unit: "cm", min: 12000, max: 22000 },
-  { label: "シングルベッド（だいたい）", unit: "cm", min: 15000, max: 30000 },
-  // m^2 scale examples (stored in cm^2)
-  { label: "たたみ1じょう（だいたい）", unit: "m", min: 12000, max: 22000 },
+  { label: "消しゴムの小さな面", unit: "cm", tate: 2, yoko: 2 },
+  { label: "小さな切手", unit: "cm", tate: 2, yoko: 3 },
+  { label: "小さなふせん", unit: "cm", tate: 3, yoko: 3 },
+  { label: "消しゴムの広い面", unit: "cm", tate: 3, yoko: 4 },
+  { label: "小さなシール", unit: "cm", tate: 4, yoko: 4 },
+  { label: "小さな折り紙", unit: "cm", tate: 5, yoko: 5 },
+  { label: "小さなメモ用紙", unit: "cm", tate: 6, yoko: 6 },
+  { label: "カード", unit: "cm", tate: 5, yoko: 9 },
+  { label: "メモ用紙", unit: "cm", tate: 7, yoko: 8 },
+  { label: "折り紙", unit: "cm", tate: 8, yoko: 8 },
+  { label: "コースター", unit: "cm", tate: 9, yoko: 9 },
+  { label: "フロアマット", unit: "m", tate: 1, yoko: 1 },
+  { label: "シングルベッド", unit: "m", tate: 1, yoko: 2 },
+  { label: "大きなテーブル", unit: "m", tate: 1.5, yoko: 2 },
+  { label: "じゅうたん", unit: "m", tate: 2, yoko: 2 },
+  { label: "レジャーシート", unit: "m", tate: 2, yoko: 3 },
+  { label: "小さなへや", unit: "m", tate: 3, yoko: 3 },
+  { label: "子どもべや", unit: "m", tate: 3, yoko: 4 },
+  { label: "リビング", unit: "m", tate: 4, yoko: 4 },
+  { label: "広いリビング", unit: "m", tate: 4, yoko: 5 },
+  { label: "小さな花だん", unit: "m", tate: 5, yoko: 5 },
+  { label: "家庭さいえん", unit: "m", tate: 5, yoko: 6 },
+  { label: "小さな庭", unit: "m", tate: 6, yoko: 6 },
+  { label: "広い庭", unit: "m", tate: 6, yoko: 8 },
+  { label: "教室", unit: "m", tate: 7, yoko: 9 },
+  { label: "広い教室", unit: "m", tate: 9, yoko: 9 },
 ];
 
-function findComparable(areaCm2) {
-  const hits = COMPARABLES.filter((x) => areaCm2 >= x.min && areaCm2 <= x.max);
-  if (hits.length) return pickOne(hits).label;
-
-  // fallback: nearest by distance to range center
-  let best = null;
-  let bestScore = Number.POSITIVE_INFINITY;
-  for (const x of COMPARABLES) {
-    const center = (x.min + x.max) / 2;
-    const score = Math.abs(areaCm2 - center);
-    if (score < bestScore) {
-      bestScore = score;
-      best = x;
-    }
-  }
-  return best ? `${best.label}（ちょっと近い）` : "";
+let lastComparable;
+function findComparable(unit, area) {
+  const candidates = COMPARABLES.filter((x) => x.unit === unit);
+  const distance = (x) => Math.abs(Math.log(area / (x.tate * x.yoko)));
+  // 面積の比で比較し、大きさが大幅に違う物を「同じくらい」にしない。
+  const close = candidates.filter((x) => distance(x) <= Math.log(1.25));
+  const pool = close.length ? close : [candidates.reduce((a, b) => distance(a) < distance(b) ? a : b)];
+  const fresh = pool.filter((x) => x !== lastComparable);
+  const chosen = pickOne(fresh.length ? fresh : pool);
+  lastComparable = chosen;
+  return chosen;
 }
 
 function openSearch(areaText) {
@@ -98,12 +106,6 @@ function openSearch(areaText) {
 function formatArea(unit, area) {
   if (unit === "m") return `${area} m²`;
   return `${area} cm²`;
-}
-
-function toCm2(unit, tate, yoko) {
-  const a = tate * yoko;
-  if (unit === "m") return a * 10000;
-  return a;
 }
 
 function createQuestion(unit) {
@@ -183,13 +185,13 @@ function renderQuestion(q) {
 
 function showResultBox(q) {
   const area = q.tate * q.yoko;
-  const areaCm2 = toCm2(q.unit, q.tate, q.yoko);
-  const comparable = findComparable(areaCm2);
+  const comparable = findComparable(q.unit, area);
   const areaText = formatArea(q.unit, area);
 
   const html = [
     `<div class="area-result-title">面積：<b>${areaText}</b></div>`,
-    comparable ? `<div class="area-result-sub">だいたい「${comparable}」くらい</div>` : "",
+    `<div class="area-result-sub">だいたい「${comparable.label}」くらい</div>`,
+    `<div class="area-result-sub">大きさの例：${comparable.tate}${comparable.unit} × ${comparable.yoko}${comparable.unit} = ${formatArea(comparable.unit, comparable.tate * comparable.yoko)}</div>`,
     `<div class="area-result-actions"><button id="searchBtn" type="button" class="btn btn-ghost">Webでさがす</button><button id="nextBtn" type="button" class="btn btn-primary">つぎへ</button></div>`,
   ].join("");
 
