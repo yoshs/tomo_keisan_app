@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>タイムアタック④ 2けたの筆算（45もん）</title>
+    <title>タイムアタック④ 2けたの筆算（20もん）</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -38,7 +38,7 @@
       <section id="screen-quiz" class="card hidden" aria-live="polite">
         <div class="status-row">
           <div class="status">
-            <span id="progress">1 / 45</span>
+            <span id="progress">1 / 20</span>
             <span class="dot">•</span>
             <span class="timer">⏱ <span id="timer">0:00.00</span></span>
             <span class="dot">•</span>
@@ -67,10 +67,11 @@
             <input
               id="ansTens"
               class="digit-input"
-              type="tel"
-              inputmode="numeric"
+              type="text"
+              inputmode="none"
               pattern="[0-9]*"
               maxlength="1"
+              readonly
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -79,10 +80,11 @@
             <input
               id="ansOnes"
               class="digit-input"
-              type="tel"
-              inputmode="numeric"
+              type="text"
+              inputmode="none"
               pattern="[0-9]*"
               maxlength="1"
+              readonly
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"

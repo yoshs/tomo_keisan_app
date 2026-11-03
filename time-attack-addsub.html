@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>タイムアタック① たし算/ひき算（45もん）</title>
+    <title>タイムアタック① たし算/ひき算（20〜45もん）</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -32,9 +32,9 @@
           <label class="field">
             <span class="field-label">もんすう</span>
             <select id="count">
-              <option value="20">20もん</option>
+              <option value="20" selected>20もん</option>
               <option value="30">30もん</option>
-              <option value="45" selected>45もん</option>
+              <option value="45">45もん</option>
             </select>
           </label>
 
@@ -60,13 +60,13 @@
         <div class="actions">
           <button id="startBtn" class="btn btn-primary">スタート</button>
         </div>
-        <p class="hint">Enterキーでも こたえられます。</p>
+        <p class="hint">画面のテンキーで こたえてね。</p>
       </section>
 
       <section id="screen-quiz" class="card hidden" aria-live="polite">
         <div class="status-row">
           <div class="status">
-            <span id="progress">1 / 45</span>
+            <span id="progress">1 / 20</span>
             <span class="dot">•</span>
             <span class="timer">⏱ <span id="timer">0:00.00</span></span>
             <span class="dot">•</span>
@@ -82,9 +82,10 @@
         <div class="answer-row">
           <input
             id="answerInput"
-            type="tel"
-            inputmode="numeric"
+            type="text"
+            inputmode="none"
             pattern="[0-9]*"
+            readonly
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"

@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>タイムアタック③ たし算+九九（45もん）</title>
+    <title>タイムアタック③ たし算+九九（20もん）</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="container">
       <header class="header">
         <h1 class="title">タイムアタック③</h1>
-        <p class="subtitle">たし算 + 九九 を45もん</p>
+        <p class="subtitle">たし算 + 九九 を20もん</p>
         <nav class="top-nav">
           <a class="link" href="./index.html">メニューへ</a>
         </nav>
@@ -33,13 +33,13 @@
         <div class="actions">
           <button id="startBtn" class="btn btn-primary">スタート</button>
         </div>
-        <p class="hint">Enterキーでも こたえられます。</p>
+        <p class="hint">画面のテンキーで こたえてね。</p>
       </section>
 
       <section id="screen-quiz" class="card hidden" aria-live="polite">
         <div class="status-row">
           <div class="status">
-            <span id="progress">1 / 45</span>
+            <span id="progress">1 / 20</span>
             <span class="dot">•</span>
             <span class="timer">⏱ <span id="timer">0:00.00</span></span>
             <span class="dot">•</span>
@@ -55,9 +55,10 @@
         <div class="answer-row">
           <input
             id="answerInput"
-            type="tel"
-            inputmode="numeric"
+            type="text"
+            inputmode="none"
             pattern="[0-9]*"
+            readonly
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"

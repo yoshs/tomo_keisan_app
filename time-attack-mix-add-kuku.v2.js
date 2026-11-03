@@ -16,7 +16,7 @@ const {
   mountNumpad
 } = common;
 
-const QUESTION_COUNT = 45;
+const QUESTION_COUNT = 20;
 
 const screens = {
   setup: $("screen-setup"),

@@ -115,20 +115,8 @@ function createQuestion(unit) {
   }
 
   // cm
-  // 「2けた × 2けた」は出さない（= どちらか片方は1けたにする）
-  // 例: 8cm × 45cm など
-  const one = randInt(2, 9);
-  const two = randInt(10, 99);
-
-  // ときどき 1けた × 1けた も混ぜる
-  if (Math.random() < 0.25) {
-    return { unit: "cm", tate: randInt(2, 9), yoko: randInt(2, 9) };
-  }
-
-  if (Math.random() < 0.5) {
-    return { unit: "cm", tate: one, yoko: two };
-  }
-  return { unit: "cm", tate: two, yoko: one };
+  // 2けたは出さない（= 1けた × 1けた のみ）
+  return { unit: "cm", tate: randInt(2, 9), yoko: randInt(2, 9) };
 }
 
 function pickUnit(mode) {
@@ -191,25 +179,6 @@ function renderQuestion(q) {
   areaUnitLabel.textContent = q.unit === "m" ? "m²" : "cm²";
   labelTate.textContent = `たて ${q.tate}${q.unit}`;
   labelYoko.textContent = `よこ ${q.yoko}${q.unit}`;
-
-  // それっぽく長さで比率を変える（見た目用）
-  // 70..250 の範囲に収める
-  const baseW = 200;
-  const baseH = 140;
-  const max = Math.max(q.tate, q.yoko);
-  const w = Math.round(baseW * (q.yoko / max));
-  const h = Math.round(baseH * (q.tate / max));
-  const x = Math.round(160 - w / 2);
-  const y = Math.round(110 - h / 2);
-
-  const svg = document.getElementById("rectSvg");
-  const rect = svg && svg.querySelector("rect");
-  if (rect) {
-    rect.setAttribute("x", String(x));
-    rect.setAttribute("y", String(y));
-    rect.setAttribute("width", String(w));
-    rect.setAttribute("height", String(h));
-  }
 }
 
 function showResultBox(q) {

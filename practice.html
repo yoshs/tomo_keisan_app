@@ -68,7 +68,7 @@
           <button id="startBtn" class="btn btn-primary">はじめる</button>
         </div>
 
-        <p class="hint">ヒント：Enterキーでも こたえられます。</p>
+        <p class="hint">画面のテンキーで こたえてね。</p>
       </section>
 
       <section id="screen-quiz" class="card hidden" aria-live="polite">
@@ -88,9 +88,10 @@
         <div class="answer-row">
           <input
             id="answerInput"
-            type="tel"
-            inputmode="numeric"
+            type="text"
+            inputmode="none"
             pattern="[0-9]*"
+            readonly
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"

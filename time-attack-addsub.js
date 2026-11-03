@@ -17,7 +17,7 @@ const {
 } = common;
 
 // デフォルトの問題数（設定で変えられる）
-const DEFAULT_QUESTION_COUNT = 45;
+const DEFAULT_QUESTION_COUNT = 20;
 
 const screens = {
   setup: $("screen-setup"),
