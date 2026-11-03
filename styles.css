@@ -227,7 +227,7 @@ input {
 
 .formula-row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
   align-items: end;
   gap: 10px;
 }
@@ -240,17 +240,20 @@ input {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .area-unit {
   color: var(--muted);
   font-weight: 900;
   font-size: 18px;
+  white-space: nowrap;
 }
 
 .formula-cell {
   display: grid;
   gap: 6px;
+  min-width: 0;
 }
 
 .formula-caption {
@@ -308,6 +311,9 @@ input {
 .answer-input {
   font-size: 28px;
   text-align: center;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .feedback {
@@ -514,6 +520,22 @@ input {
 }
 
 @media (max-width: 540px) {
+  .problem {
+    padding: 14px 10px;
+  }
+
+  .rect-svg {
+    max-height: 160px;
+  }
+
+  .formula {
+    padding: 10px;
+  }
+
+  .formula-x {
+    font-size: 26px;
+  }
+
   .status-row {
     flex-wrap: wrap;
     align-items: stretch;
@@ -558,7 +580,7 @@ input {
   }
 
   .formula-row {
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   }
 
   .formula-unit {

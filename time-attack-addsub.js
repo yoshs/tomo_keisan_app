@@ -292,7 +292,7 @@ mountNumpad({ inputEl: answerInput, containerEl: numpad });
 
 function start() {
   const difficulty = clampInt(difficultySelect.value, 1, 3, 1);
-  const questionCount = clampInt(countSelect.value, 20, 45, 45);
+  const questionCount = clampInt(countSelect.value, 20, 45, DEFAULT_QUESTION_COUNT);
   const zeroSetting = String(zeroSelect.value || "some");
   const mode = String(modeSelect.value);
   const zeroRate = zeroRateFromSetting(zeroSetting);
