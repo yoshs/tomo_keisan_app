@@ -213,7 +213,7 @@ input {
 }
 
 .rect-label {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 900;
   fill: #111827;
 }
@@ -632,4 +632,23 @@ input {
 
 .numpad-fn {
   background: #f4f4f5;
+}
+
+.difficulty-control {
+  margin-top: 16px;
+}
+
+.difficulty-control input[type="range"] {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.difficulty-steps {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
 }

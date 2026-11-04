@@ -187,6 +187,61 @@ async function areaExamples() {
   assert(labels.size >= 15, "出題範囲に合う多様な例");
   p.frame.remove();
 }
+async function difficultyLevels() {
+  const p = await openPage("time-attack-addsub", 320);
+  const w = p.frame.contentWindow;
+  const originalTimeout = w.setTimeout.bind(w);
+  w.setTimeout = (callback, delay) => originalTimeout(callback, Math.min(delay, 0));
+  const carry = (a, b, sub) => {
+    while (a || b) {
+      if (sub ? a % 10 < b % 10 : a % 10 + b % 10 >= 10) return true;
+      a = Math.floor(a / 10); b = Math.floor(b / 10);
+    }
+    return false;
+  };
+  for (let grade = 1; grade <= 3; grade++) {
+    for (let level = 1; level <= 4; level++) {
+      p.$("difficulty").value = grade;
+      p.$("level").value = level;
+      p.$("level").dispatchEvent(new w.Event("input"));
+      assert(p.$("levelValue").value === String(level), "スライダーの表示を更新");
+      assert(p.$("levelDescription").textContent.length > 0, "難易度の説明");
+      noOverflow(p, 320);
+      for (const mode of ["add", "sub", "mix"]) {
+        p.$("mode").value = mode;
+        p.$("zero").value = "none";
+        p.$("count").value = "20";
+        p.$("startBtn").click();
+        let additions = 0;
+        for (let i = 0; i < 20; i++) {
+          const text = p.$("problemText").textContent;
+          const [a, b] = text.match(/\d+/g).map(Number);
+          const sub = text.includes("−");
+          if (!sub) additions++;
+          assert(mode === "mix" || sub === (mode === "sub"), "選択した演算");
+          assert(!sub || a > b, "ひき算は負の答えを出さない");
+          if (grade === 1 && level <= 2) {
+            assert(b >= 1 && b <= 9, "1年生の小さい数");
+            if (level === 1) assert(a <= 9 && (sub || a + b <= 10), "難易度1は1桁、和は10以内");
+            else if (sub) assert(a >= 11 && a <= 18 && a - b < 10 && carry(a, b, true), "難易度2のくり下がり");
+            else assert(a <= 9 && a + b > 10, "難易度2は1桁で和が10を超える");
+          } else {
+            const digits = Math.max(2, grade);
+            assert(a >= 10 ** (digits - 1) && a < 10 ** digits, "学年に合う桁数");
+            if (grade >= 2 && level >= 3) assert(b >= 10 ** (digits - 1) && b < 10 ** digits, "同じ桁数どうし");
+            else assert(b >= 1 && b < 10 ** (digits - 1), "小さい桁との計算");
+            assert(carry(a, b, sub) === (level % 2 === 0), "くりの有無が難易度と一致");
+          }
+          input(p, "answerInput", answer(text));
+          await pause(5);
+        }
+        assert(!p.$("screen-result").classList.contains("hidden"), "全難易度で完走");
+        if (mode === "mix") assert(additions === 10, "混合は半々");
+      }
+    }
+  }
+  p.frame.remove();
+}
 async function unavailableStorage() {
   const p = await openPage("practice");
   const html = p.d.documentElement.outerHTML;
@@ -220,6 +275,7 @@ async function layouts() {
     ["たし算＋九九20問", () => timed("time-attack-mix-add-kuku")],
     ["通常練習・連打・振り返り", practice],
     ["設定保存が使えない環境", unavailableStorage],
+    ["3学年×4難易度×3演算の出題条件", difficultyLevels],
     ["筆算・繰り上がり・繰り下がり", column],
     ["面積cm", () => area("cm")],
     ["面積m", () => area("m")],

@@ -1,122 +1,125 @@
 try {
-const common = window.TomoCommon;
-const { $, clampInt, randInt, difficultyToMax } = common;
-const DEFAULT_QUESTION_COUNT = 20;
-function zeroRateFromSetting(setting) {
-  if (setting === "many") return 0.25;
-  if (setting === "some") return 0.1;
-  return 0;
-}
+  const common = window.TomoCommon;
+  const { $, clampInt, randInt, shuffleInPlace } = common;
+  const gradeEl = $("difficulty");
+  const levelEl = $("level");
+  const zeroEl = $("zero");
 
-function createAddProblem(maxSum, zeroRate) {
-  // 偏りを減らしつつ、0の問題も少し混ぜる。
-  // - zeroRateの確率で「0を使う」
-  // - 0+0 は避ける（単調すぎるため）
-  if (zeroRate > 0 && Math.random() < zeroRate) {
-    const other = randInt(1, maxSum);
-    if (Math.random() < 0.5) {
-      return { a: 0, b: other, text: `0 + ${other} = ?`, answer: other };
+  const descriptions = {
+    1: [
+      "1けたどうし。たし算のこたえは10まで。ひき算は1けたの中で。",
+      "たし算は1けたどうしで、こたえが10をこえる。ひき算は11〜18から1けたをひく、くり下がり。",
+      "2けたと1けた。くり上がり・くり下がりなし。",
+      "2けたと1けた。くり上がり・くり下がりあり。",
+    ],
+    2: [
+      "2けたと1けた。くり上がり・くり下がりなし。",
+      "2けたと1けた。くり上がり・くり下がりあり。",
+      "2けたどうし。くり上がり・くり下がりなし。",
+      "2けたどうし。くり上がり・くり下がりあり。",
+    ],
+    3: [
+      "3けたと1〜2けた。くり上がり・くり下がりなし。",
+      "3けたと1〜2けた。くり上がり・くり下がりあり。",
+      "3けたどうし。くり上がり・くり下がりなし。",
+      "3けたどうし。くり上がり・くり下がりあり。",
+    ],
+  };
+
+  function updateLevel() {
+    const grade = clampInt(gradeEl.value, 1, 3, 1);
+    const level = clampInt(levelEl.value, 1, 4, 1);
+    $("levelValue").value = String(level);
+    levelEl.setAttribute("aria-valuetext", `むずかしさ ${level}`);
+    $("levelDescription").textContent = descriptions[grade][level - 1];
+    // 0を使う問題は、くり上がり・くり下がりの練習にならないため除外。
+    zeroEl.disabled = level % 2 === 0 || (grade >= 2 && level >= 3);
+  }
+
+  function ranges(grade, level, op) {
+    if (grade === 1 && level <= 2) {
+      return { minA: op === "sub" && level === 2 ? 11 : 1,
+        maxA: op === "sub" && level === 2 ? 18 : 9, minB: 1, maxB: 9 };
     }
-    return { a: other, b: 0, text: `${other} + 0 = ?`, answer: other };
+    const digits = Math.max(2, grade);
+    return { minA: 10 ** (digits - 1), maxA: 10 ** digits - 1,
+      minB: grade >= 2 && level >= 3 ? 10 ** (digits - 1) : 1,
+      maxB: grade >= 2 && level >= 3 ? 10 ** digits - 1 : 10 ** (digits - 1) - 1 };
   }
 
-  // a,bを独立に引き、a+b<=maxSum で採用（a,b>0）
-  while (true) {
-    const a = randInt(1, maxSum);
-    const b = randInt(1, maxSum);
-    if (a + b > maxSum) continue;
-    return { a, b, text: `${a} + ${b} = ?`, answer: a + b };
-  }
-}
-
-function createSubProblem(maxA, zeroRate) {
-  // 偏りを減らしつつ、0の問題も少し混ぜる。
-  // - zeroRateの確率で「0を使う」（a-0 or a-a）
-  // - 基本は b<a にして答え0を避ける
-  if (maxA <= 0) return { a: 0, b: 0, text: "0 − 0 = ?", answer: 0 };
-  if (zeroRate > 0 && Math.random() < zeroRate) {
-    const a = randInt(1, maxA);
-    if (Math.random() < 0.5) {
-      return { a, b: 0, text: `${a} − 0 = ?`, answer: a };
+  function hasCarry(a, b, op) {
+    while (a > 0 || b > 0) {
+      const x = a % 10;
+      const y = b % 10;
+      if (op === "add" ? x + y >= 10 : x < y) return true;
+      a = Math.floor(a / 10);
+      b = Math.floor(b / 10);
     }
-    return { a, b: a, text: `${a} − ${a} = ?`, answer: 0 };
+    return false;
   }
 
-  while (true) {
-    const a = randInt(1, maxA);
-    const b = randInt(1, maxA);
-    if (b >= a) continue;
-    return { a, b, text: `${a} − ${b} = ?`, answer: a - b };
+  function makeProblem(a, b, op) {
+    return { text: `${a} ${op === "add" ? "+" : "−"} ${b} = ?`,
+      answer: op === "add" ? a + b : a - b };
   }
-}
 
-function createQuestionSet(difficulty, mode, count, zeroRate) {
-  const max = difficultyToMax(difficulty);
-
-  // まぜるはなるべく半々にする
-  let ops = [];
-  if (mode === "mix") {
-    const addCount = Math.floor(count / 2);
-    const subCount = count - addCount;
-    ops = Array(addCount).fill("add").concat(Array(subCount).fill("sub"));
-    // common.js のシャッフルを利用して偏りを減らす
-    if (typeof common.shuffleInPlace === "function") {
-      common.shuffleInPlace(ops);
+  function createProblem(grade, level, op, zeroRate) {
+    const { minA, maxA, minB, maxB } = ranges(grade, level, op);
+    if (level % 2 === 1 && minB === 1 && Math.random() < zeroRate) {
+      const a = randInt(minA, maxA);
+      return makeProblem(a, 0, op);
     }
-  } else {
-    ops = Array(count).fill(mode);
+    // 通常の出題は、桁数とくりの条件を満たす組み合わせだけ採用。
+    for (let tries = 0; tries < 200; tries++) {
+      const a = randInt(minA, maxA);
+      const b = randInt(minB, maxB);
+      if (op === "sub" && a <= b) continue;
+      if (grade === 1 && level === 1) {
+        if (op === "add" && a + b > 10) continue;
+      } else if (grade === 1 && level === 2 && op === "add") {
+        if (a + b <= 10) continue;
+      } else if (hasCarry(a, b, op) !== (level % 2 === 0)) continue;
+      return makeProblem(a, b, op);
+    }
+    // 乱数が偏っても必ず条件を満たす問題で終了する。
+    if (grade === 1 && level <= 2) {
+      return level === 1 ? makeProblem(3, 2, op) :
+        op === "add" ? makeProblem(8, 7, op) : makeProblem(13, 7, op);
+    }
+    const base = 10 ** (Math.max(2, grade) - 1);
+    if (level % 2 === 1) return makeProblem(3 * base + 3, minB + 1, op);
+    return op === "add" ? makeProblem(base + 8, minB + 7, op) :
+      makeProblem(3 * base + 1, minB + 7, op);
   }
 
-  const questions = [];
-  const used = new Set();
-
-  for (let i = 0; i < ops.length; i += 1) {
-    const op = ops[i];
-
-    // 同じような問題の重複（例: 7+3 と 3+7）を避ける
-    let q = null;
-    for (let tries = 0; tries < 500; tries += 1) {
-      const candidate =
-        op === "add" ? createAddProblem(max, zeroRate) : createSubProblem(max, zeroRate);
-      const key =
-        op === "add"
-          ? `add:${Math.min(candidate.a, candidate.b)}+${Math.max(candidate.a, candidate.b)}`
-          : `sub:${candidate.a}-${candidate.b}`;
-      if (used.has(key)) continue;
-      used.add(key);
-      q = { text: candidate.text, answer: candidate.answer };
-      break;
-    }
-
-    // 念のため（可能性は低いが）ユニーク生成に失敗した場合はそのまま追加
-    if (!q) {
-      const fallback =
-        op === "add" ? createAddProblem(max, zeroRate) : createSubProblem(max, zeroRate);
-      q = { text: fallback.text, answer: fallback.answer };
-    }
-
-    questions.push(q);
+  function createQuestionSet() {
+    const grade = clampInt(gradeEl.value, 1, 3, 1);
+    const level = clampInt(levelEl.value, 1, 4, 1);
+    const count = clampInt($("count").value, 20, 45, 20);
+    const mode = $("mode").value;
+    const zeroRate = zeroEl.value === "many" ? 0.25 : zeroEl.value === "some" ? 0.1 : 0;
+    const ops = mode === "mix" ? shuffleInPlace([
+      ...Array(Math.floor(count / 2)).fill("add"), ...Array(Math.ceil(count / 2)).fill("sub"),
+    ]) : Array(count).fill(mode);
+    const used = new Set();
+    return ops.map(op => {
+      let q;
+      // 易しい設定では候補が少ないため、重複回避の試行数を制限する。
+      for (let tries = 0; tries < 40; tries++) {
+        q = createProblem(grade, level, op, zeroRate);
+        const [a, b] = q.text.match(/\d+/g).map(Number);
+        const key = op === "add" ? `${Math.min(a, b)}+${Math.max(a, b)}` : `${a}-${b}`;
+        if (!used.has(key)) { used.add(key); break; }
+      }
+      return q;
+    });
   }
 
-  return questions;
-}
-
-
-common.mountTimedQuiz(() => createQuestionSet(
-  clampInt($("difficulty").value, 1, 3, 1),
-  $("mode").value,
-  clampInt($("count").value, 20, 45, DEFAULT_QUESTION_COUNT),
-  zeroRateFromSetting($("zero").value)
-));
-
+  gradeEl.addEventListener("change", updateLevel);
+  levelEl.addEventListener("input", updateLevel);
+  updateLevel();
+  common.mountTimedQuiz(createQuestionSet);
 } catch (err) {
-  try {
-    const common = window.TomoCommon;
-    if (common && typeof common.showFatalError === "function") {
-      common.showFatalError(String((err && err.stack) || (err && err.message) || err));
-    }
-  } catch (e) {
-    // ignore
-  }
+  window.TomoCommon?.showFatalError(String(err.stack || err));
   throw err;
 }
