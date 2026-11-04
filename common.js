@@ -76,6 +76,35 @@
     return Date.now();
   }
 
+  let celebration;
+  let celebrationTimeout;
+  function celebrateCorrect() {
+    if (!celebration) {
+      celebration = document.createElement("div");
+      celebration.className = "correct-celebration";
+      celebration.setAttribute("aria-hidden", "true");
+      document.body.appendChild(celebration);
+    }
+    window.clearTimeout(celebrationTimeout);
+    const mascot = document.createElement("span");
+    mascot.className = "celebration-mascot";
+    mascot.textContent = "🐰";
+    const praise = document.createElement("span");
+    praise.className = "celebration-praise";
+    praise.textContent = "できた！";
+    const stars = Array.from({ length: 5 }, (_, index) => {
+      const star = document.createElement("span");
+      star.className = "celebration-star";
+      star.textContent = index % 2 === 0 ? "⭐" : "💗";
+      star.style.setProperty("--star-index", index);
+      return star;
+    });
+    // 子要素を入れ替えて、連続正解でも一度ずつ再生する。
+    celebration.replaceChildren(mascot, praise, ...stars);
+    celebration.hidden = false;
+    celebrationTimeout = window.setTimeout(() => { celebration.hidden = true; }, 700);
+  }
+
   let audioCtx;
   function beep(ok) {
     try {
@@ -162,6 +191,7 @@
     startTicker,
     nowMs,
     beep,
+    celebrateCorrect,
     mountNumpad,
     showFatalError,
     createTransition,

@@ -2,7 +2,7 @@ try {
 const common = window.TomoCommon;
 if (!common) throw new Error("common.js が読み込めませんでした");
 
-const { $, toHalfWidthDigits, randInt, pickOne, beep } = common;
+const { $, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect } = common;
 
 const screens = {
   setup: $("screen-setup"),
@@ -292,6 +292,7 @@ function maybeJudge() {
     updateHeader();
     setFeedback("せいかい！", true);
     beep(true);
+    celebrateCorrect();
     showResultBox(q);
     return;
   }

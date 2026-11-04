@@ -28,12 +28,14 @@ try {
 
   function updateLevel() {
     const grade = clampInt(gradeEl.value, 1, 3, 1);
-    const level = clampInt(levelEl.value, 1, 4, 1);
-    $("levelValue").value = String(level);
-    levelEl.setAttribute("aria-valuetext", `むずかしさ ${level}`);
-    $("levelDescription").textContent = descriptions[grade][level - 1];
+    const level = clampInt(levelEl.value, 0, 4, 1);
+    $("levelValue").value = level === 0 ? "0（せっていなし）" : String(level);
+    levelEl.setAttribute("aria-valuetext", level === 0 ? "むずかしさ 0、せっていなし" : `むずかしさ ${level}`);
+    $("levelDescription").textContent = level === 0
+      ? "えらんだ がくねんの、むずかしさ1〜4を まぜて しゅつだいするよ。"
+      : descriptions[grade][level - 1];
     // 0を使う問題は、くり上がり・くり下がりの練習にならないため除外。
-    zeroEl.disabled = level % 2 === 0 || (grade >= 2 && level >= 3);
+    zeroEl.disabled = level !== 0 && (level % 2 === 0 || (grade >= 2 && level >= 3));
   }
 
   function ranges(grade, level, op) {
@@ -94,19 +96,23 @@ try {
 
   function createQuestionSet() {
     const grade = clampInt(gradeEl.value, 1, 3, 1);
-    const level = clampInt(levelEl.value, 1, 4, 1);
+    const level = clampInt(levelEl.value, 0, 4, 1);
     const count = clampInt($("count").value, 20, 45, 20);
     const mode = $("mode").value;
     const zeroRate = zeroEl.value === "many" ? 0.25 : zeroEl.value === "some" ? 0.1 : 0;
     const ops = mode === "mix" ? shuffleInPlace([
       ...Array(Math.floor(count / 2)).fill("add"), ...Array(Math.ceil(count / 2)).fill("sub"),
     ]) : Array(count).fill(mode);
+    // 設定なしでは各難易度をほぼ同数にし、順序をランダムにする。
+    const levels = level === 0
+      ? shuffleInPlace(Array.from({ length: count }, (_, i) => i % 4 + 1))
+      : Array(count).fill(level);
     const used = new Set();
-    return ops.map(op => {
+    return ops.map((op, index) => {
       let q;
       // 易しい設定では候補が少ないため、重複回避の試行数を制限する。
       for (let tries = 0; tries < 40; tries++) {
-        q = createProblem(grade, level, op, zeroRate);
+        q = createProblem(grade, levels[index], op, zeroRate);
         const [a, b] = q.text.match(/\d+/g).map(Number);
         const key = op === "add" ? `${Math.min(a, b)}+${Math.max(a, b)}` : `${a}-${b}`;
         if (!used.has(key)) { used.add(key); break; }

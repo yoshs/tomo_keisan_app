@@ -11,6 +11,7 @@ const {
   startTicker,
   nowMs,
   beep,
+  celebrateCorrect,
   createTransition
 } = common;
 
@@ -236,6 +237,7 @@ function submit() {
     feedback.textContent = "せいかい！";
     feedback.classList.add("ok");
     beep(true);
+    celebrateCorrect();
     transition.schedule(() => {
       if (state.index + 1 >= QUESTION_COUNT) {
         finish();

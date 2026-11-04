@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const { $, toHalfWidthDigits, formatMs, startTicker, nowMs, beep, mountNumpad, createTransition } = window.TomoCommon;
+  const { $, toHalfWidthDigits, formatMs, startTicker, nowMs, beep, celebrateCorrect, mountNumpad, createTransition } = window.TomoCommon;
   window.TomoCommon.mountTimedQuiz = function (createQuestions) {
     const screens = {
       setup: $("screen-setup"),
@@ -102,6 +102,7 @@
       feedback.classList.remove("ng");
       feedback.classList.add("ok");
       beep(true);
+      celebrateCorrect();
       transition.schedule(() => {
         if (state.index + 1 >= state.questions.length) {
           finish();

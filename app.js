@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const { $, clampInt, toHalfWidthDigits, randInt, pickOne, beep, mountNumpad, createTransition } = window.TomoCommon;
+  const { $, clampInt, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect, mountNumpad, createTransition } = window.TomoCommon;
   const STORAGE_KEY = "tomo_keisan_settings_v1";
   const transition = createTransition();
   function defaultOpsForGrade(grade) {
@@ -249,6 +249,7 @@
     const ok = userAnswer === q.answer;
 
     if (ok) {
+      celebrateCorrect();
       quizState.correct += 1;
       feedback.textContent = "せいかい！";
       feedback.classList.add("ok");

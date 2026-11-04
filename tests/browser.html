@@ -27,6 +27,12 @@ function input(page, id, value) {
 function keypad(page, value) {
   for (const digit of String(value)) page.d.querySelector(`[data-value="${digit}"]`).click();
 }
+function celebrationVisible(page) {
+  const effect = page.d.querySelector(".correct-celebration");
+  assert(effect && !effect.hidden, "正解アニメーションを表示");
+  assert(page.frame.contentWindow.getComputedStyle(effect).pointerEvents === "none", "アニメーションが入力を妨げない");
+  assert(page.d.querySelectorAll(".correct-celebration").length === 1, "アニメーションの要素を再利用");
+}
 function answer(text) {
   const [a, b] = text.match(/\d+/g).map(Number);
   return text.includes("×") ? a * b : text.includes("÷") ? a / b : text.includes("−") ? a - b : a + b;
@@ -44,7 +50,9 @@ async function timed(name, options = {}) {
   p.$("startBtn").click();
   input(p, "answerInput", 99999);
   assert(p.$("mistakes").textContent === "1", "ミスを1回カウント");
+  assert(!p.d.querySelector(".correct-celebration"), "間違いではアニメーションを表示しない");
   keypad(p, answer(p.$("problemText").textContent));
+  celebrationVisible(p);
   p.$("submitBtn").click();
   p.$("restartBtn").click();
   await pause(300);
@@ -78,6 +86,7 @@ async function practice() {
   keypad(p, answer(p.$("problemText").textContent));
   p.$("submitBtn").click();
   p.$("submitBtn").click();
+  celebrationVisible(p);
   p.$("restartBtn").click();
   await pause(700);
   assert(p.$("statusProgress").textContent === "1 / 10", "通常練習の古い遷移キャンセル");
@@ -121,6 +130,7 @@ async function finishColumn(p) {
     const value = add ? a + b : a - b;
     keypad(p, value % 10);
     keypad(p, Math.floor(value / 10));
+    celebrationVisible(p);
     await pause(300);
   }
   assert(!p.$("screen-result").classList.contains("hidden"), "筆算を完了");
@@ -141,6 +151,7 @@ async function area(mode) {
     assert(p.d.activeElement === p.$("areaInput"), "横から面積へ移動");
     keypad(p, t * y);
     assert(!p.$("resultBox").classList.contains("hidden"), "面積の正解表示");
+    celebrationVisible(p);
     keypad(p, "123");
     assert(p.$("okCount").textContent === String(i + 1), "正解後の入力を無視");
     p.$("nextBtn").click();
@@ -200,11 +211,12 @@ async function difficultyLevels() {
     return false;
   };
   for (let grade = 1; grade <= 3; grade++) {
-    for (let level = 1; level <= 4; level++) {
+    for (let level = 0; level <= 4; level++) {
       p.$("difficulty").value = grade;
       p.$("level").value = level;
       p.$("level").dispatchEvent(new w.Event("input"));
-      assert(p.$("levelValue").value === String(level), "スライダーの表示を更新");
+      assert(p.$("levelValue").value === (level === 0 ? "0（せっていなし）" : String(level)), "スライダーの表示を更新");
+      if (level === 0) assert(!p.$("zero").disabled, "設定なしでも0の頻度を設定できる");
       assert(p.$("levelDescription").textContent.length > 0, "難易度の説明");
       noOverflow(p, 320);
       for (const mode of ["add", "sub", "mix"]) {
@@ -213,6 +225,7 @@ async function difficultyLevels() {
         p.$("count").value = "20";
         p.$("startBtn").click();
         let additions = 0;
+        const levelCounts = [0, 0, 0, 0];
         for (let i = 0; i < 20; i++) {
           const text = p.$("problemText").textContent;
           const [a, b] = text.match(/\d+/g).map(Number);
@@ -220,7 +233,23 @@ async function difficultyLevels() {
           if (!sub) additions++;
           assert(mode === "mix" || sub === (mode === "sub"), "選択した演算");
           assert(!sub || a > b, "ひき算は負の答えを出さない");
-          if (grade === 1 && level <= 2) {
+          if (level === 0) {
+            if (grade === 1) {
+              assert(b >= 1 && b <= 9 && a <= 99, "1年生の範囲");
+              if (a <= 9) levelCounts[!sub && a + b > 10 ? 1 : 0]++;
+              else {
+                assert(a >= 10, "2桁と1桁");
+                if (carry(a, b, sub)) {
+                  levelCounts[3]++;
+                  if (sub && a >= 11 && a <= 18 && a - b < 10) levelCounts[1]++;
+                } else levelCounts[2]++;
+              }
+            } else {
+              const base = 10 ** (grade - 1);
+              assert(a >= base && a < base * 10 && b < base * 10, "学年の範囲");
+              levelCounts[(b < base ? 0 : 2) + Number(carry(a, b, sub))]++;
+            }
+          } else if (grade === 1 && level <= 2) {
             assert(b >= 1 && b <= 9, "1年生の小さい数");
             if (level === 1) assert(a <= 9 && (sub || a + b <= 10), "難易度1は1桁、和は10以内");
             else if (sub) assert(a >= 11 && a <= 18 && a - b < 10 && carry(a, b, true), "難易度2のくり下がり");
@@ -237,6 +266,7 @@ async function difficultyLevels() {
         }
         assert(!p.$("screen-result").classList.contains("hidden"), "全難易度で完走");
         if (mode === "mix") assert(additions === 10, "混合は半々");
+        if (level === 0) assert(levelCounts.every(n => n >= 5), "設定なしは難易度1〜4を均等に含む");
       }
     }
   }
@@ -275,7 +305,7 @@ async function layouts() {
     ["たし算＋九九20問", () => timed("time-attack-mix-add-kuku")],
     ["通常練習・連打・振り返り", practice],
     ["設定保存が使えない環境", unavailableStorage],
-    ["3学年×4難易度×3演算の出題条件", difficultyLevels],
+    ["3学年×5難易度×3演算の出題条件", difficultyLevels],
     ["筆算・繰り上がり・繰り下がり", column],
     ["面積cm", () => area("cm")],
     ["面積m", () => area("m")],
