@@ -76,6 +76,8 @@
     return Date.now();
   }
 
+  const comboReward = (combo) => 100 + 10 * combo;
+
   let celebration;
   let celebrationTimeout;
   const mascots = ["🐰", "🐱", "🐶", "🐼", "🐻", "🦊", "🐨", "🐸", "🐧", "🐹"];
@@ -108,7 +110,7 @@
     // 子要素を入れ替えて、連続正解でも一度ずつ再生する。
     const streak = document.createElement("span");
     streak.className = "celebration-combo";
-    streak.textContent = combo >= 2 ? `${combo} コンボ！` : "+100てん";
+    streak.textContent = `${combo} コンボ！（＋${comboReward(combo)}てん）`;
     praise.appendChild(streak);
     celebration.replaceChildren(mascot, praise, ...stars);
     celebration.hidden = false;
@@ -121,11 +123,13 @@
     let maxCombo = 0;
     const pointsEl = $("livePoints");
     const comboEl = $("liveCombo");
+    const multiplierEl = $("liveMultiplier");
     const resultPointsEl = $("resultPoints");
     const resultComboEl = $("resultMaxCombo");
     function render() {
       pointsEl.textContent = String(points);
       comboEl.textContent = String(combo);
+      multiplierEl.textContent = `×${(1 + combo / 10).toFixed(1)}`;
       resultPointsEl.textContent = String(points);
       resultComboEl.textContent = String(maxCombo);
     }
@@ -137,8 +141,8 @@
         render();
       },
       record(correct) {
-        points += correct ? 100 : -50;
         combo = correct ? combo + 1 : 0;
+        points += correct ? comboReward(combo) : -50;
         maxCombo = Math.max(maxCombo, combo);
         render();
         return { points, combo, maxCombo };

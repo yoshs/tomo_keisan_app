@@ -68,7 +68,7 @@
           <button id="startBtn" class="btn btn-primary">はじめる</button>
         </div>
 
-        <p class="hint">せいかいで＋100てん、まちがえると−50てん。つづけて せいかいすると コンボ！</p>
+        <p class="hint">せいかいで100てん×コンボばいりつ！ 1コンボは1.1ばい、2コンボは1.2ばい。まちがえると−50てん。</p>
         <p class="hint">画面のテンキーで こたえてね。</p>
       </section>
 
@@ -82,7 +82,7 @@
 
         <div class="game-score" aria-label="とくてんとコンボ">
           <div><span class="score-caption">とくてん</span><strong id="livePoints">0</strong><span>てん</span></div>
-          <div><strong id="liveCombo">0</strong><span>コンボ</span></div>
+          <div><strong id="liveCombo">0</strong><span>コンボ</span><span id="liveMultiplier" class="score-caption">×1.0</span></div>
         </div>
 
         <div class="problem">
@@ -153,7 +153,7 @@
       </footer>
     </main>
 
-    <script src="./common.js?v=20261104-combo2"></script>
+    <script src="./common.js?v=20261104-multiplier1"></script>
     <script src="./app.js?v=20261104-score1"></script>
   </body>
 </html>

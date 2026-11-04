@@ -36,6 +36,7 @@ function celebrationVisible(page) {
 function liveScore(page, points, combo) {
   assert(page.$("livePoints").textContent === String(points), `得点は${points}`);
   assert(page.$("liveCombo").textContent === String(combo), `コンボは${combo}`);
+  assert(page.$("liveMultiplier").textContent === `×${(1 + combo / 10).toFixed(1)}`, "コンボ倍率の表示");
 }
 function finalScore(page, points, maxCombo) {
   assert(page.$("resultPoints").textContent === String(points), `合計得点は${points}`);
@@ -65,7 +66,7 @@ async function timed(name, options = {}) {
   assert(!p.d.querySelector(".correct-celebration"), "間違いではアニメーションを表示しない");
   keypad(p, answer(p.$("problemText").textContent));
   celebrationVisible(p);
-  liveScore(p, 50, 1);
+  liveScore(p, 60, 1);
   p.$("submitBtn").click();
   p.$("restartBtn").click();
   await pause(300);
@@ -79,7 +80,7 @@ async function timed(name, options = {}) {
     assert(p.$("progress").textContent === `${i + 1} / ${count}`, "進捗");
     if (i === 2) {
       input(p, "answerInput", 99999);
-      liveScore(p, 150, 0);
+      liveScore(p, 180, 0);
     }
     if (i === 0) {
       const value = String(answer(text));
@@ -90,7 +91,7 @@ async function timed(name, options = {}) {
   }
   assert(!p.$("screen-result").classList.contains("hidden"), "最後まで完了");
   assert(p.$("resultDetail").textContent === "ミス 1", "二重採点や余分なミスなし");
-  finalScore(p, count * 100 - 50, count - 2);
+  finalScore(p, 230 + 100 * (count - 2) + 5 * (count - 2) * (count - 1) - 50, count - 2);
   if (name === "time-attack-kuku") assert(seen.size === 20, "九九の重複なし");
   p.$("againBtn").click();
   assert(p.$("progress").textContent.startsWith("1 /"), "もういちど");
@@ -115,7 +116,7 @@ async function practice() {
     p.$("submitBtn").click();
     await pause(700);
   }
-  finalScore(p, 850, 9);
+  finalScore(p, 1300, 9);
   assert(p.$("mistakeList").children.length === 1, "間違えた問題の振り返り");
   p.$("backBtn").click();
   assert(!p.$("screen-setup").classList.contains("hidden"), "設定に戻る");
@@ -150,7 +151,7 @@ async function finishColumn(p) {
     if (i === 2) {
       input(p, "ansOnes", (value + 1) % 10);
       input(p, "ansTens", Math.floor(value / 10));
-      liveScore(p, 150, 0);
+      liveScore(p, 180, 0);
       p.d.querySelector('[data-action="clear"]').click();
       if (add ? a % 10 + b % 10 >= 10 : a % 10 < b % 10) p.$(add ? "carryPlusBtn" : "carryMinusBtn").click();
     }
@@ -161,7 +162,7 @@ async function finishColumn(p) {
   }
   assert(!p.$("screen-result").classList.contains("hidden"), "筆算を完了");
   assert(p.$("resultDetail").textContent === "ミス 1", "筆算の採点");
-  finalScore(p, 1950, 18);
+  finalScore(p, 3690, 18);
   p.frame.remove();
 }
 async function area(mode) {
@@ -175,7 +176,7 @@ async function area(mode) {
     if (i === 2) {
       keypad(p, t); keypad(p, y);
       input(p, "areaInput", t * y + 1);
-      liveScore(p, 150, 0);
+      liveScore(p, 180, 0);
     }
     keypad(p, t);
     assert(p.d.activeElement === p.$("yokoInput"), "縦から横へ移動");
@@ -189,7 +190,7 @@ async function area(mode) {
     p.$("nextBtn").click();
   }
   assert(p.$("resultSummary").textContent === "10", "面積を完了");
-  finalScore(p, 950, 8);
+  finalScore(p, 1340, 8);
   p.frame.remove();
 }
 async function areaExamples() {
@@ -324,7 +325,7 @@ async function mascotsAndEndlessScore() {
     assert(animal !== lastAnimal && cheer !== lastCheer, "動物も言葉も連続で同じにしない");
     animals.add(animal); cheers.add(cheer);
     lastAnimal = animal; lastCheer = cheer;
-    assert(p.d.querySelector(".celebration-combo").textContent === "3 コンボ！", "コンボの演出");
+    assert(p.d.querySelector(".celebration-combo").textContent === "3 コンボ！（＋130てん）", "コンボの演出");
     assert(p.d.querySelector(".celebration-praise .celebration-combo"), "コンボ数をセリフ内に表示");
     noOverflow(p, 320);
   }
@@ -333,10 +334,10 @@ async function mascotsAndEndlessScore() {
   const t = Number(p.$("labelTate").textContent.match(/\d+/)[0]);
   const y = Number(p.$("labelYoko").textContent.match(/\d+/)[0]);
   keypad(p, t); keypad(p, y); keypad(p, t * y);
-  liveScore(p, 100, 1);
+  liveScore(p, 110, 1);
   p.$("finishBtn").click();
   assert(!p.$("screen-result").classList.contains("hidden"), "むげん練習も結果を表示");
-  finalScore(p, 100, 1);
+  finalScore(p, 110, 1);
   p.$("againBtn").click();
   liveScore(p, 0, 0);
   finalScore(p, 0, 0);
