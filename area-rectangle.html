@@ -61,9 +61,9 @@
         <div class="problem">
           <div class="rect-wrap" aria-label="四角形">
             <svg id="rectSvg" class="rect-svg" viewBox="0 0 320 220" role="img" aria-label="四角形の図">
-              <rect x="70" y="40" width="200" height="140" rx="8" ry="8" class="rect-shape" />
-              <line x1="70" y1="190" x2="270" y2="190" class="rect-measure" />
-              <line x1="60" y1="40" x2="60" y2="180" class="rect-measure" />
+              <rect id="rectShape" x="70" y="40" width="200" height="140" rx="0" class="rect-shape" />
+              <line id="measureYoko" x1="70" y1="190" x2="270" y2="190" class="rect-measure" />
+              <line id="measureTate" x1="60" y1="40" x2="60" y2="180" class="rect-measure" />
               <text id="labelYoko" x="170" y="212" text-anchor="middle" class="rect-label">よこ</text>
               <text id="labelTate" x="14" y="112" text-anchor="middle" class="rect-label" transform="rotate(-90 14 112)">たて</text>
             </svg>
@@ -201,6 +201,6 @@
         );
       }
     </script>
-    <script src="./area-rectangle.js?v=20261103-examples1" onerror="__scriptLoadError('area-rectangle.js')"></script>
+    <script src="./area-rectangle.js?v=20261104-shape1" onerror="__scriptLoadError('area-rectangle.js')"></script>
   </body>
 </html>

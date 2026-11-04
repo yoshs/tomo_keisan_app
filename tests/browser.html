@@ -163,6 +163,15 @@ async function areaExamples() {
         w.Math.random = () => values.shift();
         p.$("startBtn").click();
         w.Math.random = originalRandom;
+        const shape = p.$("rectShape");
+        const width = Number(shape.getAttribute("width"));
+        const height = Number(shape.getAttribute("height"));
+        assert(Math.abs(width / height - y / t) < 1e-9, "図形の縦横比が問題の寸法と一致");
+        const svgBox = p.$("rectSvg").getBoundingClientRect();
+        for (const id of ["rectShape", "measureTate", "measureYoko", "labelTate", "labelYoko"]) {
+          const box = p.$(id).getBoundingClientRect();
+          assert(box.left >= svgBox.left && box.right <= svgBox.right && box.top >= svgBox.top && box.bottom <= svgBox.bottom, "図形と寸法ラベルが表示枠内に収まる");
+        }
         keypad(p, t); keypad(p, y); keypad(p, t * y);
         const captions = p.d.querySelectorAll(".area-result-sub");
         assert(captions.length === 2, "比較対象の寸法を表示");

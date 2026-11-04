@@ -22,6 +22,10 @@ const ngCountEl = $("ngCount");
 const unitLabel = $("unitLabel");
 const labelTate = $("labelTate");
 const labelYoko = $("labelYoko");
+const rectSvg = $("rectSvg");
+const rectShape = $("rectShape");
+const measureYoko = $("measureYoko");
+const measureTate = $("measureTate");
 
 const tateInput = $("tateInput");
 const yokoInput = $("yokoInput");
@@ -181,6 +185,24 @@ function renderQuestion(q) {
   areaUnitLabel.textContent = q.unit === "m" ? "m²" : "cm²";
   labelTate.textContent = `たて ${q.tate}${q.unit}`;
   labelYoko.textContent = `よこ ${q.yoko}${q.unit}`;
+
+  // 寸法ラベルの余白を残し、同じ倍率でたて・よこを縮尺する。
+  const scale = Math.min(220 / q.yoko, 140 / q.tate);
+  const width = q.yoko * scale;
+  const height = q.tate * scale;
+  const x = 70 + (220 - width) / 2;
+  const y = 25 + (140 - height) / 2;
+  const setAttributes = (el, attrs) => {
+    Object.entries(attrs).forEach(([name, value]) => el.setAttribute(name, String(value)));
+  };
+  setAttributes(rectShape, { x, y, width, height });
+  setAttributes(measureYoko, { x1: x, y1: y + height + 10, x2: x + width, y2: y + height + 10 });
+  setAttributes(measureTate, { x1: x - 10, y1: y, x2: x - 10, y2: y + height });
+  setAttributes(labelYoko, { x: x + width / 2, y: y + height + 32 });
+  const labelX = x - 42;
+  const labelY = y + height / 2;
+  setAttributes(labelTate, { x: labelX, y: labelY, transform: `rotate(-90 ${labelX} ${labelY})` });
+  rectSvg.setAttribute("aria-label", `たて${q.tate}${q.unit}、よこ${q.yoko}${q.unit}の四角形`);
 }
 
 function showResultBox(q) {
