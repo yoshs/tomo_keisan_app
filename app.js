@@ -1,8 +1,9 @@
 (() => {
   "use strict";
-  const { $, clampInt, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect, mountNumpad, createTransition } = window.TomoCommon;
+  const { $, clampInt, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect, createScoreboard, mountNumpad, createTransition } = window.TomoCommon;
   const STORAGE_KEY = "tomo_keisan_settings_v1";
   const transition = createTransition();
+  const score = createScoreboard();
   function defaultOpsForGrade(grade) {
     switch (grade) {
       case 1:
@@ -104,9 +105,7 @@
   const problemText = $("problemText");
   const feedback = $("feedback");
   const statusProgress = $("statusProgress");
-  const statusScore = $("statusScore");
 
-  const resultScore = $("resultScore");
   const resultDetail = $("resultDetail");
   const mistakesBox = $("mistakes");
   const mistakeList = $("mistakeList");
@@ -190,8 +189,6 @@
 
   function updateStatus() {
     statusProgress.textContent = `${quizState.index + 1} / ${quizState.count}`;
-    const score = Math.round((quizState.correct / quizState.count) * 100);
-    statusScore.textContent = `${score}てん`;
   }
 
   function showProblem() {
@@ -207,8 +204,6 @@
 
   function finishQuiz() {
     quizState.active = false;
-    const score = Math.round((quizState.correct / quizState.count) * 100);
-    resultScore.textContent = String(score);
     resultDetail.textContent = `${quizState.count}もん中 ${quizState.correct}もん せいかい`;
 
     mistakeList.innerHTML = "";
@@ -249,11 +244,12 @@
     const ok = userAnswer === q.answer;
 
     if (ok) {
-      celebrateCorrect();
+      celebrateCorrect(score.record(true).combo);
       quizState.correct += 1;
       feedback.textContent = "せいかい！";
       feedback.classList.add("ok");
     } else {
+      score.record(false);
       feedback.textContent = `ざんねん… こたえは ${q.answer}`;
       feedback.classList.add("ng");
       quizState.mistakes.push({
@@ -284,6 +280,7 @@
     }
 
     transition.cancel();
+    score.reset();
     quizState.active = true;
     writeSettings(settings);
 

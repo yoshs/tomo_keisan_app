@@ -2,7 +2,9 @@ try {
 const common = window.TomoCommon;
 if (!common) throw new Error("common.js が読み込めませんでした");
 
-const { $, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect } = common;
+const { $, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect, createScoreboard } = common;
+
+const score = createScoreboard();
 
 const screens = {
   setup: $("screen-setup"),
@@ -234,11 +236,16 @@ function hideResultBox() {
   resultBox.textContent = "";
 }
 
+function finish() {
+  state.locked = true;
+  resultSummary.textContent = String(state.ok);
+  resultDetail.textContent = `ミス ${state.ng}`;
+  showScreen("result");
+}
+
 function next() {
   if (state.total !== 0 && state.index + 1 >= state.total) {
-    resultSummary.textContent = String(state.ok);
-    resultDetail.textContent = `ミス ${state.ng}`;
-    showScreen("result");
+    finish();
     return;
   }
 
@@ -292,12 +299,13 @@ function maybeJudge() {
     updateHeader();
     setFeedback("せいかい！", true);
     beep(true);
-    celebrateCorrect();
+    celebrateCorrect(score.record(true).combo);
     showResultBox(q);
     return;
   }
 
   state.ng += 1;
+  score.record(false);
   updateHeader();
   setFeedback("ちがうよ。もういちど！", false);
   beep(false);
@@ -359,10 +367,12 @@ if (numpad) {
 }
 
 function start() {
+  score.reset();
   state.mode = String(unitModeEl.value);
   state.total = Number.parseInt(String(countEl.value), 10);
   if (!Number.isFinite(state.total) || state.total < 0) state.total = 20;
 
+  $("finishBtn").classList.toggle("hidden", state.total !== 0);
   state.index = 0;
   state.ok = 0;
   state.ng = 0;
@@ -378,6 +388,7 @@ function start() {
   showScreen("quiz");
 }
 
+$("finishBtn").addEventListener("click", finish);
 startBtn.addEventListener("click", start);
 restartBtn.addEventListener("click", start);
 againBtn.addEventListener("click", start);

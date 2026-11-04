@@ -78,7 +78,11 @@
 
   let celebration;
   let celebrationTimeout;
-  function celebrateCorrect() {
+  const mascots = ["🐰", "🐱", "🐶", "🐼", "🐻", "🦊", "🐨", "🐸", "🐧", "🐹"];
+  const cheers = ["できた！", "すごい！", "やったね！", "いいね！", "そのちょうし！", "ばっちり！", "よくできたね！", "ナイス！", "がんばってるね！", "すてき！"];
+  let lastMascot;
+  let lastCheer;
+  function celebrateCorrect(combo = 1) {
     if (!celebration) {
       celebration = document.createElement("div");
       celebration.className = "correct-celebration";
@@ -88,10 +92,12 @@
     window.clearTimeout(celebrationTimeout);
     const mascot = document.createElement("span");
     mascot.className = "celebration-mascot";
-    mascot.textContent = "🐰";
+    lastMascot = pickOne(mascots.filter(value => value !== lastMascot));
+    mascot.textContent = lastMascot;
     const praise = document.createElement("span");
     praise.className = "celebration-praise";
-    praise.textContent = "できた！";
+    lastCheer = pickOne(cheers.filter(value => value !== lastCheer));
+    praise.textContent = lastCheer;
     const stars = Array.from({ length: 5 }, (_, index) => {
       const star = document.createElement("span");
       star.className = "celebration-star";
@@ -100,9 +106,44 @@
       return star;
     });
     // 子要素を入れ替えて、連続正解でも一度ずつ再生する。
+    const streak = document.createElement("span");
+    streak.className = "celebration-combo";
+    streak.textContent = combo >= 2 ? `${combo} コンボ！` : "+100てん";
+    praise.appendChild(streak);
     celebration.replaceChildren(mascot, praise, ...stars);
     celebration.hidden = false;
     celebrationTimeout = window.setTimeout(() => { celebration.hidden = true; }, 700);
+  }
+
+  function createScoreboard() {
+    let points = 0;
+    let combo = 0;
+    let maxCombo = 0;
+    const pointsEl = $("livePoints");
+    const comboEl = $("liveCombo");
+    const resultPointsEl = $("resultPoints");
+    const resultComboEl = $("resultMaxCombo");
+    function render() {
+      pointsEl.textContent = String(points);
+      comboEl.textContent = String(combo);
+      resultPointsEl.textContent = String(points);
+      resultComboEl.textContent = String(maxCombo);
+    }
+    return {
+      reset() {
+        points = 0; combo = 0; maxCombo = 0;
+        if (celebration) celebration.hidden = true;
+        window.clearTimeout(celebrationTimeout);
+        render();
+      },
+      record(correct) {
+        points += correct ? 100 : -50;
+        combo = correct ? combo + 1 : 0;
+        maxCombo = Math.max(maxCombo, combo);
+        render();
+        return { points, combo, maxCombo };
+      },
+    };
   }
 
   let audioCtx;
@@ -192,6 +233,7 @@
     nowMs,
     beep,
     celebrateCorrect,
+    createScoreboard,
     mountNumpad,
     showFatalError,
     createTransition,

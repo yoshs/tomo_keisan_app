@@ -11,12 +11,13 @@ const {
   startTicker,
   nowMs,
   beep,
-  celebrateCorrect,
+  celebrateCorrect, createScoreboard,
   createTransition
 } = common;
 
 const QUESTION_COUNT = 20;
 const transition = createTransition();
+const score = createScoreboard();
 
 const screens = {
   setup: $("screen-setup"),
@@ -237,7 +238,7 @@ function submit() {
     feedback.textContent = "せいかい！";
     feedback.classList.add("ok");
     beep(true);
-    celebrateCorrect();
+    celebrateCorrect(score.record(true).combo);
     transition.schedule(() => {
       if (state.index + 1 >= QUESTION_COUNT) {
         finish();
@@ -250,6 +251,7 @@ function submit() {
   }
 
   state.mistakes += 1;
+  score.record(false);
   if (parsed.value === q.answer && parsed.carry !== q.carry) {
     feedback.textContent = "くりが ちがうよ！";
   } else {
@@ -278,6 +280,7 @@ function normalizeDigitInput(el) {
 }
 
 function start() {
+  score.reset();
   transition.cancel();
   const mode = String(modeSelect.value);
 

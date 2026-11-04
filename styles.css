@@ -658,7 +658,7 @@ input {
   top: 24%;
   left: 50%;
   transform: translateX(-50%);
-  width: 180px;
+  width: min(240px, calc(100vw - 32px));
   height: 160px;
   z-index: 10;
   pointer-events: none;
@@ -680,6 +680,8 @@ input {
 }
 
 .celebration-praise {
+  max-width: 100%;
+  text-align: center;
   padding: 4px 14px;
   border-radius: 999px;
   background: #fff0f6;
@@ -687,6 +689,47 @@ input {
   font-size: 20px;
   font-weight: 800;
   animation: celebration-bounce 700ms ease-out both;
+}
+
+.celebration-combo {
+  display: block;
+  margin-top: 2px;
+  color: #804b00;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.game-score {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 14px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff7e6;
+  color: #804b00;
+}
+
+.game-score > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+}
+
+.game-score strong {
+  font-size: 24px;
+  overflow-wrap: anywhere;
+}
+
+.score-caption {
+  font-size: 14px;
+}
+
+.game-score-result strong {
+  font-size: 32px;
 }
 
 .celebration-star {
@@ -713,7 +756,8 @@ input {
 
 @media (prefers-reduced-motion: reduce) {
   .celebration-mascot,
-  .celebration-praise {
+  .celebration-praise,
+  .celebration-combo {
     animation: none;
   }
 

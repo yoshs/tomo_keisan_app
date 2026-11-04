@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const { $, toHalfWidthDigits, formatMs, startTicker, nowMs, beep, celebrateCorrect, mountNumpad, createTransition } = window.TomoCommon;
+  const { $, toHalfWidthDigits, formatMs, startTicker, nowMs, beep, celebrateCorrect, createScoreboard, mountNumpad, createTransition } = window.TomoCommon;
   window.TomoCommon.mountTimedQuiz = function (createQuestions) {
     const screens = {
       setup: $("screen-setup"),
@@ -30,6 +30,7 @@
       });
     }
 
+    const score = createScoreboard();
     const transition = createTransition();
     const state = {
       questions: [],
@@ -102,7 +103,7 @@
       feedback.classList.remove("ng");
       feedback.classList.add("ok");
       beep(true);
-      celebrateCorrect();
+      celebrateCorrect(score.record(true).combo);
       transition.schedule(() => {
         if (state.index + 1 >= state.questions.length) {
           finish();
@@ -116,6 +117,7 @@
     function handleWrong() {
       if (!state.active || state.busy) return;
       state.mistakes += 1;
+      score.record(false);
       feedback.textContent = "ちがうよ！";
       feedback.classList.remove("ok");
       feedback.classList.add("ng");
@@ -175,6 +177,7 @@
     mountNumpad({ inputEl: answerInput, containerEl: numpad, isDisabled: () => !state.active || state.busy });
 
     function start() {
+      score.reset();
       transition.cancel();
       stopTimer();
       state.questions = createQuestions();

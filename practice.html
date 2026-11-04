@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>とも けいさん（れんしゅう）</title>
-    <link rel="stylesheet" href="./styles.css?v=20261104-celebration1" />
+    <link rel="stylesheet" href="./styles.css?v=20261104-combo2" />
   </head>
   <body>
     <main class="container">
@@ -68,6 +68,7 @@
           <button id="startBtn" class="btn btn-primary">はじめる</button>
         </div>
 
+        <p class="hint">せいかいで＋100てん、まちがえると−50てん。つづけて せいかいすると コンボ！</p>
         <p class="hint">画面のテンキーで こたえてね。</p>
       </section>
 
@@ -75,10 +76,13 @@
         <div class="status-row">
           <div class="status">
             <span id="statusProgress">1 / 10</span>
-            <span class="dot">•</span>
-            <span id="statusScore">0てん</span>
           </div>
           <button id="restartBtn" class="btn btn-ghost">やりなおし</button>
+        </div>
+
+        <div class="game-score" aria-label="とくてんとコンボ">
+          <div><span class="score-caption">とくてん</span><strong id="livePoints">0</strong><span>てん</span></div>
+          <div><strong id="liveCombo">0</strong><span>コンボ</span></div>
         </div>
 
         <div class="problem">
@@ -125,11 +129,11 @@
       <section id="screen-result" class="card hidden">
         <h2 class="card-title">けっか</h2>
 
+        <div class="game-score game-score-result">
+          <div><span class="score-caption">ごうけい</span><strong id="resultPoints">0</strong><span>てん</span></div>
+          <div><span class="score-caption">さいこう</span><strong id="resultMaxCombo">0</strong><span>コンボ</span></div>
+        </div>
         <div class="result-summary">
-          <div class="result-big">
-            <span id="resultScore">0</span>
-            <span class="result-unit">てん</span>
-          </div>
           <div class="result-small" id="resultDetail">10もん中 0もん せいかい</div>
         </div>
 
@@ -149,7 +153,7 @@
       </footer>
     </main>
 
-    <script src="./common.js?v=20261104-celebration1"></script>
-    <script src="./app.js?v=20261104-celebration1"></script>
+    <script src="./common.js?v=20261104-combo2"></script>
+    <script src="./app.js?v=20261104-score1"></script>
   </body>
 </html>

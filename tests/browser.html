@@ -33,6 +33,14 @@ function celebrationVisible(page) {
   assert(page.frame.contentWindow.getComputedStyle(effect).pointerEvents === "none", "アニメーションが入力を妨げない");
   assert(page.d.querySelectorAll(".correct-celebration").length === 1, "アニメーションの要素を再利用");
 }
+function liveScore(page, points, combo) {
+  assert(page.$("livePoints").textContent === String(points), `得点は${points}`);
+  assert(page.$("liveCombo").textContent === String(combo), `コンボは${combo}`);
+}
+function finalScore(page, points, maxCombo) {
+  assert(page.$("resultPoints").textContent === String(points), `合計得点は${points}`);
+  assert(page.$("resultMaxCombo").textContent === String(maxCombo), `最大コンボは${maxCombo}`);
+}
 function answer(text) {
   const [a, b] = text.match(/\d+/g).map(Number);
   return text.includes("×") ? a * b : text.includes("÷") ? a / b : text.includes("−") ? a - b : a + b;
@@ -48,21 +56,31 @@ async function timed(name, options = {}) {
   const p = await openPage(name);
   for (const [id, value] of Object.entries(options)) p.$(id).value = value;
   p.$("startBtn").click();
+  liveScore(p, 0, 0);
+  p.$("submitBtn").click();
+  liveScore(p, 0, 0);
   input(p, "answerInput", 99999);
+  liveScore(p, -50, 0);
   assert(p.$("mistakes").textContent === "1", "ミスを1回カウント");
   assert(!p.d.querySelector(".correct-celebration"), "間違いではアニメーションを表示しない");
   keypad(p, answer(p.$("problemText").textContent));
   celebrationVisible(p);
+  liveScore(p, 50, 1);
   p.$("submitBtn").click();
   p.$("restartBtn").click();
   await pause(300);
   assert(p.$("progress").textContent.startsWith("1 /"), "再スタート時に古い遷移をキャンセル");
+  liveScore(p, 0, 0);
   const count = Number(p.$("progress").textContent.split("/")[1]);
   const seen = new Set();
   for (let i = 0; i < count; i++) {
     const text = p.$("problemText").textContent;
     seen.add(text);
     assert(p.$("progress").textContent === `${i + 1} / ${count}`, "進捗");
+    if (i === 2) {
+      input(p, "answerInput", 99999);
+      liveScore(p, 150, 0);
+    }
     if (i === 0) {
       const value = String(answer(text));
       input(p, "answerInput", value.replace(/[0-9]/g, x => String.fromCharCode(x.charCodeAt(0) + 0xfee0)));
@@ -71,7 +89,8 @@ async function timed(name, options = {}) {
     await pause(250);
   }
   assert(!p.$("screen-result").classList.contains("hidden"), "最後まで完了");
-  assert(p.$("resultDetail").textContent === "ミス 0", "二重採点や余分なミスなし");
+  assert(p.$("resultDetail").textContent === "ミス 1", "二重採点や余分なミスなし");
+  finalScore(p, count * 100 - 50, count - 2);
   if (name === "time-attack-kuku") assert(seen.size === 20, "九九の重複なし");
   p.$("againBtn").click();
   assert(p.$("progress").textContent.startsWith("1 /"), "もういちど");
@@ -96,7 +115,7 @@ async function practice() {
     p.$("submitBtn").click();
     await pause(700);
   }
-  assert(p.$("resultScore").textContent === "90", "連打しても正しいスコア");
+  finalScore(p, 850, 9);
   assert(p.$("mistakeList").children.length === 1, "間違えた問題の振り返り");
   p.$("backBtn").click();
   assert(!p.$("screen-setup").classList.contains("hidden"), "設定に戻る");
@@ -128,13 +147,21 @@ async function finishColumn(p) {
     const add = bottom.includes("+");
     if (add ? a % 10 + b % 10 >= 10 : a % 10 < b % 10) p.$(add ? "carryPlusBtn" : "carryMinusBtn").click();
     const value = add ? a + b : a - b;
+    if (i === 2) {
+      input(p, "ansOnes", (value + 1) % 10);
+      input(p, "ansTens", Math.floor(value / 10));
+      liveScore(p, 150, 0);
+      p.d.querySelector('[data-action="clear"]').click();
+      if (add ? a % 10 + b % 10 >= 10 : a % 10 < b % 10) p.$(add ? "carryPlusBtn" : "carryMinusBtn").click();
+    }
     keypad(p, value % 10);
     keypad(p, Math.floor(value / 10));
     celebrationVisible(p);
     await pause(300);
   }
   assert(!p.$("screen-result").classList.contains("hidden"), "筆算を完了");
-  assert(p.$("resultDetail").textContent === "ミス 0", "筆算の採点");
+  assert(p.$("resultDetail").textContent === "ミス 1", "筆算の採点");
+  finalScore(p, 1950, 18);
   p.frame.remove();
 }
 async function area(mode) {
@@ -145,6 +172,11 @@ async function area(mode) {
   for (let i = 0; i < 10; i++) {
     const t = Number(p.$("labelTate").textContent.match(/\d+/)[0]);
     const y = Number(p.$("labelYoko").textContent.match(/\d+/)[0]);
+    if (i === 2) {
+      keypad(p, t); keypad(p, y);
+      input(p, "areaInput", t * y + 1);
+      liveScore(p, 150, 0);
+    }
     keypad(p, t);
     assert(p.d.activeElement === p.$("yokoInput"), "縦から横へ移動");
     keypad(p, y);
@@ -157,6 +189,7 @@ async function area(mode) {
     p.$("nextBtn").click();
   }
   assert(p.$("resultSummary").textContent === "10", "面積を完了");
+  finalScore(p, 950, 8);
   p.frame.remove();
 }
 async function areaExamples() {
@@ -272,6 +305,43 @@ async function difficultyLevels() {
   }
   p.frame.remove();
 }
+async function mascotsAndEndlessScore() {
+  const p = await openPage("area-rectangle", 320);
+  const w = p.frame.contentWindow;
+  p.$("count").value = "0";
+  p.$("startBtn").click();
+  const animals = new Set();
+  const cheers = new Set();
+  let lastAnimal;
+  let lastCheer;
+  let seed = 83;
+  const random = w.Math.random;
+  w.Math.random = () => { seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296; };
+  for (let i = 0; i < 100; i++) {
+    w.TomoCommon.celebrateCorrect(3);
+    const animal = p.d.querySelector(".celebration-mascot").textContent;
+    const cheer = p.d.querySelector(".celebration-praise").firstChild.textContent;
+    assert(animal !== lastAnimal && cheer !== lastCheer, "動物も言葉も連続で同じにしない");
+    animals.add(animal); cheers.add(cheer);
+    lastAnimal = animal; lastCheer = cheer;
+    assert(p.d.querySelector(".celebration-combo").textContent === "3 コンボ！", "コンボの演出");
+    assert(p.d.querySelector(".celebration-praise .celebration-combo"), "コンボ数をセリフ内に表示");
+    noOverflow(p, 320);
+  }
+  w.Math.random = random;
+  assert(animals.size === 10 && cheers.size === 10, "動物10種類・言葉10種類");
+  const t = Number(p.$("labelTate").textContent.match(/\d+/)[0]);
+  const y = Number(p.$("labelYoko").textContent.match(/\d+/)[0]);
+  keypad(p, t); keypad(p, y); keypad(p, t * y);
+  liveScore(p, 100, 1);
+  p.$("finishBtn").click();
+  assert(!p.$("screen-result").classList.contains("hidden"), "むげん練習も結果を表示");
+  finalScore(p, 100, 1);
+  p.$("againBtn").click();
+  liveScore(p, 0, 0);
+  finalScore(p, 0, 0);
+  p.frame.remove();
+}
 async function unavailableStorage() {
   const p = await openPage("practice");
   const html = p.d.documentElement.outerHTML;
@@ -309,6 +379,7 @@ async function layouts() {
     ["筆算・繰り上がり・繰り下がり", column],
     ["面積cm", () => area("cm")],
     ["面積m", () => area("m")],
+    ["ランダムな動物・言葉とむげん練習の得点", mascotsAndEndlessScore],
     ["面積の全145通りと大きさの例", areaExamples],
   ];
   for (const [name, run] of checks) {
