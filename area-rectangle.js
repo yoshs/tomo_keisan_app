@@ -237,6 +237,7 @@ function hideResultBox() {
 }
 
 function finish() {
+  score.finish({ completedCount: state.ok });
   state.locked = true;
   resultSummary.textContent = String(state.ok);
   resultDetail.textContent = `ミス ${state.ng}`;

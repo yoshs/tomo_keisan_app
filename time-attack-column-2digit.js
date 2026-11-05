@@ -182,6 +182,7 @@ function finish() {
   state.active = false;
   stopTimer();
   const elapsed = nowMs() - state.startMs;
+  score.finish({ elapsedMs: elapsed });
   resultTime.textContent = formatMs(elapsed);
   resultDetail.textContent = `ミス ${state.mistakes}`;
   showScreen("result");

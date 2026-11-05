@@ -140,6 +140,7 @@
   }
 
   function createScoreboard() {
+    const rankings = window.TomoRankings.create();
     let points = 0;
     let streak = 0;
     let combo = 0;
@@ -158,11 +159,13 @@
     }
     return {
       reset() {
+        rankings.start();
         points = 0; streak = 0; combo = 0; maxCombo = 0;
         if (celebration) celebration.hidden = true;
         window.clearTimeout(celebrationTimeout);
         render();
       },
+      finish(options) { rankings.finish({ points, maxCombo }, options); },
       record(correct) {
         streak = correct ? streak + 1 : 0;
         combo = Math.max(0, streak - 1);

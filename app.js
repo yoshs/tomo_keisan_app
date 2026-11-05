@@ -203,6 +203,7 @@
   }
 
   function finishQuiz() {
+    score.finish();
     quizState.active = false;
     resultDetail.textContent = `${quizState.count}もん中 ${quizState.correct}もん せいかい`;
 

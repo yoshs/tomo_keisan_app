@@ -50,6 +50,9 @@ function liveScore(page, points, combo) {
 function finalScore(page, points, maxCombo) {
   assert(page.$("resultPoints").textContent === String(points), `合計得点は${points}`);
   assert(page.$("resultMaxCombo").textContent === String(maxCombo), `最大コンボは${maxCombo}`);
+  if (!page.$("screen-result").classList.contains("hidden")) {
+    assert(page.d.querySelector(".ranking-entry"), "終了後にランキングを表示");
+  }
 }
 function answer(text) {
   const [a, b] = text.match(/\d+/g).map(Number);
@@ -393,6 +396,68 @@ async function unavailableStorage() {
   assert(!d.getElementById("fatalError"), "保存が使えなくても起動");
   d.getElementById("startBtn").click();
   assert(!d.getElementById("screen-quiz").classList.contains("hidden"), "保存が使えなくても開始");
+  const w = p.frame.contentWindow;
+  const originalTimeout = w.setTimeout.bind(w);
+  w.setTimeout = (callback, delay) => originalTimeout(callback, Math.min(delay, 0));
+  const q = { frame: p.frame, d, $: id => d.getElementById(id) };
+  for (let i = 0; i < 10; i++) {
+    input(q, "answerInput", answer(q.$("problemText").textContent));
+    q.$("submitBtn").click();
+    await pause(5);
+  }
+  assert(!q.$("screen-result").classList.contains("hidden"), "保存不可でも最後まで完了");
+  assert(d.querySelector(".rankings-note").textContent.includes("ほぞんできません"), "保存不可を結果に表示");
+  p.frame.remove();
+}
+async function rankings() {
+  const p = await openPage("area-rectangle", 320);
+  const w = p.frame.contentWindow;
+  const memory = new Map();
+  const storage = { getItem: key => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value) };
+  Object.defineProperty(w, "localStorage", { configurable: true, value: storage });
+  p.$("count").value = "10";
+  const board = w.TomoRankings.create();
+  function save(points, maxCombo, elapsedMs = null) {
+    board.start();
+    board.finish({ points, maxCombo }, { elapsedMs });
+  }
+  function rows() { return [...p.d.querySelectorAll(".ranking-entry")]; }
+  function scores() { return rows().map(row => Number.parseInt(row.querySelector(".ranking-points").textContent, 10)); }
+  save(500, 2, 10000);
+  const key = [...memory.keys()][0];
+  assert(JSON.parse(memory.get(key)).length === 1, "得点を保存");
+  board.finish({ points: 9999, maxCombo: 99 });
+  assert(JSON.parse(memory.get(key)).length === 1, "同じ終了処理では二重保存しない");
+  save(500, 3, 20000);
+  assert(rows()[0].classList.contains("is-current"), "同点は最大コンボで順位付け");
+  save(500, 3, 10000);
+  assert(rows()[0].classList.contains("is-current"), "同点・同コンボは短いタイム順");
+  for (let i = 1; i <= 12; i++) save(i * 1000, i);
+  assert(rows().length === 10 && scores()[0] === 12000 && scores()[9] === 3000, "上位10件に絞る");
+  save(-50, 0);
+  assert(!rows().some(row => row.classList.contains("is-current")), "トップ10外を正しく表示");
+  noOverflow(p, 320);
+  const ready = new Promise(resolve => p.frame.onload = resolve);
+  w.location.reload();
+  await ready;
+  const d = p.frame.contentDocument;
+  const loadedWindow = p.frame.contentWindow;
+  Object.defineProperty(loadedWindow, "localStorage", { configurable: true, value: storage });
+  d.getElementById("count").value = "10";
+  const loaded = loadedWindow.TomoRankings.create();
+  loaded.start(); loaded.finish({ points: 100, maxCombo: 0 });
+  assert(d.querySelectorAll(".ranking-entry").length === 10, "開き直しても保存した記録を表示");
+  d.getElementById("count").value = "20";
+  loaded.start(); loaded.finish({ points: 700, maxCombo: 4 });
+  assert(d.querySelectorAll(".ranking-entry").length === 1 && memory.size === 2, "問題数の異なる記録を分ける");
+  d.getElementById("count").value = "10";
+  memory.set(key, "invalid json");
+  loaded.start(); loaded.finish({ points: -50, maxCombo: 0 });
+  assert(JSON.parse(memory.get(key))[0].points === -50, "壊れた保存データから復旧し、負の点も保存");
+  storage.setItem = () => { throw new Error("Storage full"); };
+  loaded.start(); loaded.finish({ points: 800, maxCombo: 5 });
+  assert([...d.querySelectorAll(".rankings-note")].some(el => el.textContent.includes("ほぞんできません")), "容量不足でも結果を表示");
+  noOverflow({ d }, 320);
   p.frame.remove();
 }
 async function backgrounds() {
@@ -428,6 +493,7 @@ async function layouts() {
   const checks = [
     ["6種類の背景柄と開き直した際の切り替え", backgrounds],
     ["全ページの表示（320〜768px）", layouts],
+    ["ランキングの保存・順位・条件分け・保存失敗", rankings],
     ["たし算20問", () => timed("time-attack-addsub", { mode: "add", count: "20", zero: "none" })],
     ["ひき算30問", () => timed("time-attack-addsub", { mode: "sub", count: "30", difficulty: "2", zero: "many" })],
     ["たしひき混合45問", () => timed("time-attack-addsub", { mode: "mix", count: "45", difficulty: "3" })],

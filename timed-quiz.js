@@ -78,6 +78,7 @@
     function finish() {
       stopTimer();
       const elapsed = nowMs() - state.startMs;
+      score.finish({ elapsedMs: elapsed });
       resultTime.textContent = formatMs(elapsed);
       resultDetail.textContent = `ミス ${state.mistakes}`;
       state.active = false;
