@@ -677,7 +677,7 @@ input {
   position: relative;
   font-size: 80px;
   line-height: 1.1;
-  animation: celebration-bounce 1000ms ease-out both;
+  animation: celebration-bounce 800ms ease-out both;
 }
 
 .encouragement-face {
@@ -718,7 +718,7 @@ input {
   color: #a52c68;
   font-size: 22px;
   font-weight: 800;
-  animation: celebration-bounce 1000ms ease-out both;
+  animation: celebration-bounce 800ms ease-out both;
 }
 
 .celebration-combo {
@@ -768,7 +768,7 @@ input {
   left: 44%;
   font-size: 22px;
   --angle: calc(var(--star-index) * 72deg);
-  animation: celebration-sparkle 1000ms ease-out both;
+  animation: celebration-sparkle 800ms ease-out both;
 }
 
 @keyframes celebration-bounce {

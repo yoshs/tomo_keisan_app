@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>タイムアタック④ 2けたの筆算（20もん）</title>
-    <link rel="stylesheet" href="./styles.css?v=20261105-one-second" />
-    <script src="./background.js?v=20261105-patterns1" defer></script>
+    <link rel="stylesheet" href="./styles.css?v=20261105-rankingfix2" />
+    <script src="./background.js?v=20261105-rankingfix2" defer></script>
   </head>
   <body data-mode="time-attack-column-2digit">
     <main class="container">
@@ -133,6 +133,10 @@
           </div>
           <div class="result-small" id="resultDetail">ミス 0</div>
         </div>
+        <section id="rankingsResult" class="rankings" aria-label="このブラウザのランキング">
+          <h3 class="rankings-title">ランキング</h3>
+          <p class="rankings-caption">けっかを しゅうけいしています…</p>
+        </section>
 
         <div class="actions">
           <button id="againBtn" class="btn btn-primary">もういちど</button>
@@ -160,8 +164,8 @@
         }
       }
     </script>
-    <script src="./rankings.js?v=20261105-ranking1"></script>
-    <script src="./common.js?v=20261105-one-second" onerror="__scriptLoadError('common.js')"></script>
+    <script src="./rankings.js?v=20261105-rankingfix2"></script>
+    <script src="./common.js?v=20261105-rankingfix2" onerror="__scriptLoadError('common.js')"></script>
     <script>
       if (!window.TomoCommon) {
         document.body.insertAdjacentHTML(
@@ -170,6 +174,6 @@
         );
       }
     </script>
-    <script src="./time-attack-column-2digit.js?v=20261105-ranking1" onerror="__scriptLoadError('time-attack-column-2digit.js')"></script>
+    <script src="./time-attack-column-2digit.js?v=20261105-rankingfix2" onerror="__scriptLoadError('time-attack-column-2digit.js')"></script>
   </body>
 </html>

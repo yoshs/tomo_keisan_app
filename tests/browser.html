@@ -369,7 +369,7 @@ async function reactionTiming() {
   w.TomoCommon.encourageWrong();
   const wrongSize = Number.parseFloat(w.getComputedStyle(p.d.querySelector(".celebration-mascot")).fontSize);
   const wrongTextSize = Number.parseFloat(w.getComputedStyle(p.d.querySelector(".celebration-praise")).fontSize);
-  await pause(800);
+  await pause(600);
   encouragementVisible(p);
   noOverflow(p, 320);
   w.TomoCommon.celebrateCorrect(12);
@@ -377,12 +377,12 @@ async function reactionTiming() {
   const mascot = p.d.querySelector(".celebration-mascot");
   assert(Number.parseFloat(w.getComputedStyle(mascot).fontSize) > wrongSize, "正解キャラクターは大きく表示");
   assert(Number.parseFloat(w.getComputedStyle(p.d.querySelector(".celebration-praise")).fontSize) > wrongTextSize, "正解のセリフも大きく表示");
-  assert(w.getComputedStyle(mascot).animationDuration === "1s", "アニメーションは1秒");
-  await pause(800);
+  assert(w.getComputedStyle(mascot).animationDuration === "0.8s", "アニメーションは0.8秒");
+  await pause(600);
   celebrationVisible(p);
   noOverflow(p, 320);
   await pause(250);
-  assert(p.d.querySelector(".correct-celebration").hidden, "1秒後に非表示");
+  assert(p.d.querySelector(".correct-celebration").hidden, "0.8秒後に非表示");
   p.frame.remove();
 }
 async function unavailableStorage() {
@@ -460,6 +460,32 @@ async function rankings() {
   noOverflow({ d }, 320);
   p.frame.remove();
 }
+async function rankingResultFallback() {
+  const p = await openPage("time-attack-addsub", 320);
+  const w = p.frame.contentWindow;
+  const memory = new Map();
+  Object.defineProperty(w, "localStorage", { configurable: true, value: {
+    getItem: key => memory.get(key) ?? null,
+    setItem: (key, value) => memory.set(key, value),
+  } });
+  const score = w.TomoCommon.createScoreboard();
+  score.reset();
+  score.record(true); score.record(true);
+  p.$("resultTime").textContent = "0:12.34";
+  // 古いモード処理のように、finishを呼ばずに結果画面だけ表示する。
+  p.$("screen-setup").classList.add("hidden");
+  p.$("screen-result").classList.remove("hidden");
+  await pause(20);
+  assert(p.d.querySelectorAll("#rankingsResult").length === 1, "ランキング欄が必ず1つ存在する");
+  assert(p.d.querySelectorAll(".ranking-entry").length === 1, "結果表示を検知してランキングを表示");
+  assert(memory.size === 1, "結果画面から保存できる");
+  const stored = JSON.parse([...memory.values()][0]);
+  assert(stored[0].points === 210 && stored[0].elapsedMs === 12340, "得点・タイムを正しく保存");
+  score.finish({ elapsedMs: 12340 });
+  assert(JSON.parse([...memory.values()][0]).length === 1, "通常処理と併用しても二重保存しない");
+  noOverflow(p, 320);
+  p.frame.remove();
+}
 async function backgrounds() {
   const themes = ["dots", "stars", "hearts", "flowers", "clouds", "gingham"];
   for (const name of ["index", "practice", "time-attack-addsub", "time-attack-kuku", "time-attack-mix-add-kuku", "time-attack-column-2digit", "area-rectangle"]) {
@@ -494,6 +520,7 @@ async function layouts() {
     ["6種類の背景柄と開き直した際の切り替え", backgrounds],
     ["全ページの表示（320〜768px）", layouts],
     ["ランキングの保存・順位・条件分け・保存失敗", rankings],
+    ["古いモード処理でも結果画面にランキング表示", rankingResultFallback],
     ["たし算20問", () => timed("time-attack-addsub", { mode: "add", count: "20", zero: "none" })],
     ["ひき算30問", () => timed("time-attack-addsub", { mode: "sub", count: "30", difficulty: "2", zero: "many" })],
     ["たしひき混合45問", () => timed("time-attack-addsub", { mode: "mix", count: "45", difficulty: "3" })],

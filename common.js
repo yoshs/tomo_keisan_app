@@ -128,7 +128,7 @@
     if (correct) praise.appendChild(streak);
     celebration.replaceChildren(mascot, praise, ...stars);
     celebration.hidden = false;
-    celebrationTimeout = window.setTimeout(() => { celebration.hidden = true; }, 1000);
+    celebrationTimeout = window.setTimeout(() => { celebration.hidden = true; }, 800);
   }
 
   function celebrateCorrect(combo = 0) {
@@ -157,6 +157,14 @@
       resultPointsEl.textContent = String(points);
       resultComboEl.textContent = String(maxCombo);
     }
+    const resultScreen = $("screen-result");
+    new MutationObserver(() => {
+      if (resultScreen.classList.contains("hidden")) return;
+      const time = document.getElementById("resultTime")?.textContent.match(/^(\d+):(\d+)\.(\d{2})$/);
+      const elapsedMs = time ? Number(time[1]) * 60000 + Number(time[2]) * 1000 + Number(time[3]) * 10 : null;
+      const completedCount = Number.parseInt(document.getElementById("resultSummary")?.textContent || "0", 10);
+      rankings.finish({ points, maxCombo }, { elapsedMs, completedCount });
+    }).observe(resultScreen, { attributes: true, attributeFilter: ["class"] });
     return {
       reset() {
         rankings.start();

@@ -38,9 +38,10 @@
 
   window.TomoRankings = {
     create() {
-      const section = element("section", "rankings");
+      const section = document.getElementById("rankingsResult") || element("section", "rankings");
+      section.id = "rankingsResult";
       section.setAttribute("aria-label", "このブラウザのランキング");
-      document.querySelector("#screen-result .result-summary").after(section);
+      if (!section.isConnected) document.querySelector("#screen-result .result-summary").after(section);
       let context;
       let finished = false;
 
@@ -48,7 +49,7 @@
         start() {
           context = captureSettings();
           finished = false;
-          section.replaceChildren();
+          section.replaceChildren(element("h3", "rankings-title", "ランキング"), element("p", "rankings-caption", "けっかを しゅうけいしています…"));
         },
         finish(score, { elapsedMs = null, completedCount = 0 } = {}) {
           if (finished || !context) return;
