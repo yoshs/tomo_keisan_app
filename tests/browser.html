@@ -356,6 +356,28 @@ async function mascotsAndEndlessScore() {
   finalScore(p, 0, 0);
   p.frame.remove();
 }
+async function reactionTiming() {
+  const p = await openPage("area-rectangle", 320);
+  const w = p.frame.contentWindow;
+  w.TomoCommon.encourageWrong();
+  const wrongSize = Number.parseFloat(w.getComputedStyle(p.d.querySelector(".celebration-mascot")).fontSize);
+  const wrongTextSize = Number.parseFloat(w.getComputedStyle(p.d.querySelector(".celebration-praise")).fontSize);
+  await pause(800);
+  encouragementVisible(p);
+  noOverflow(p, 320);
+  w.TomoCommon.celebrateCorrect(12);
+  celebrationVisible(p);
+  const mascot = p.d.querySelector(".celebration-mascot");
+  assert(Number.parseFloat(w.getComputedStyle(mascot).fontSize) > wrongSize, "正解キャラクターは大きく表示");
+  assert(Number.parseFloat(w.getComputedStyle(p.d.querySelector(".celebration-praise")).fontSize) > wrongTextSize, "正解のセリフも大きく表示");
+  assert(w.getComputedStyle(mascot).animationDuration === "1.2s", "アニメーションは1.2秒");
+  await pause(800);
+  celebrationVisible(p);
+  noOverflow(p, 320);
+  await pause(450);
+  assert(p.d.querySelector(".correct-celebration").hidden, "1.2秒後に非表示");
+  p.frame.remove();
+}
 async function unavailableStorage() {
   const p = await openPage("practice");
   const html = p.d.documentElement.outerHTML;
@@ -394,6 +416,7 @@ async function layouts() {
     ["面積cm", () => area("cm")],
     ["面積m", () => area("m")],
     ["ランダムな動物・言葉とむげん練習の得点", mascotsAndEndlessScore],
+    ["演出の表示時間と正解時のサイズ", reactionTiming],
     ["面積の全145通りと大きさの例", areaExamples],
   ];
   for (const [name, run] of checks) {

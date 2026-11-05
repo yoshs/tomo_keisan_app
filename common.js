@@ -128,7 +128,7 @@
     if (correct) praise.appendChild(streak);
     celebration.replaceChildren(mascot, praise, ...stars);
     celebration.hidden = false;
-    celebrationTimeout = window.setTimeout(() => { celebration.hidden = true; }, 700);
+    celebrationTimeout = window.setTimeout(() => { celebration.hidden = true; }, 1200);
   }
 
   function celebrateCorrect(combo = 1) {
