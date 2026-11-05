@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const { $, toHalfWidthDigits, formatMs, startTicker, nowMs, beep, celebrateCorrect, createScoreboard, mountNumpad, createTransition } = window.TomoCommon;
+  const { $, toHalfWidthDigits, formatMs, startTicker, nowMs, beep, celebrateCorrect, encourageWrong, createScoreboard, mountNumpad, createTransition } = window.TomoCommon;
   window.TomoCommon.mountTimedQuiz = function (createQuestions) {
     const screens = {
       setup: $("screen-setup"),
@@ -118,6 +118,7 @@
       if (!state.active || state.busy) return;
       state.mistakes += 1;
       score.record(false);
+      encourageWrong();
       feedback.textContent = "ちがうよ！";
       feedback.classList.remove("ok");
       feedback.classList.add("ng");

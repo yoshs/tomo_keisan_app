@@ -84,7 +84,9 @@
   const cheers = ["できた！", "すごい！", "やったね！", "いいね！", "そのちょうし！", "ばっちり！", "よくできたね！", "ナイス！", "がんばってるね！", "すてき！"];
   let lastMascot;
   let lastCheer;
-  function celebrateCorrect(combo = 1) {
+  let lastEncouragement;
+  const encouragements = ["おしい！", "もういっかい！", "だいじょうぶ！", "ゆっくりでいいよ！", "つぎはできるよ！", "あきらめないで！", "いっしょにがんばろう！", "あとすこし！", "もういちどかんがえよう！", "おうえんしてるよ！"];
+  function showReaction(correct, combo = 1) {
     if (!celebration) {
       celebration = document.createElement("div");
       celebration.className = "correct-celebration";
@@ -92,15 +94,27 @@
       document.body.appendChild(celebration);
     }
     window.clearTimeout(celebrationTimeout);
+    celebration.classList.toggle("is-encouragement", !correct);
     const mascot = document.createElement("span");
     mascot.className = "celebration-mascot";
     lastMascot = pickOne(mascots.filter(value => value !== lastMascot));
     mascot.textContent = lastMascot;
+    if (!correct) {
+      const face = document.createElement("span");
+      face.className = "encouragement-face";
+      face.textContent = "🥺";
+      mascot.appendChild(face);
+    }
     const praise = document.createElement("span");
     praise.className = "celebration-praise";
-    lastCheer = pickOne(cheers.filter(value => value !== lastCheer));
-    praise.textContent = lastCheer;
-    const stars = Array.from({ length: 5 }, (_, index) => {
+    if (correct) {
+      lastCheer = pickOne(cheers.filter(value => value !== lastCheer));
+      praise.textContent = lastCheer;
+    } else {
+      lastEncouragement = pickOne(encouragements.filter(value => value !== lastEncouragement));
+      praise.textContent = lastEncouragement;
+    }
+    const stars = Array.from({ length: correct ? 5 : 0 }, (_, index) => {
       const star = document.createElement("span");
       star.className = "celebration-star";
       star.textContent = index % 2 === 0 ? "⭐" : "💗";
@@ -111,10 +125,18 @@
     const streak = document.createElement("span");
     streak.className = "celebration-combo";
     streak.textContent = `${combo} コンボ！（＋${comboReward(combo)}てん）`;
-    praise.appendChild(streak);
+    if (correct) praise.appendChild(streak);
     celebration.replaceChildren(mascot, praise, ...stars);
     celebration.hidden = false;
     celebrationTimeout = window.setTimeout(() => { celebration.hidden = true; }, 700);
+  }
+
+  function celebrateCorrect(combo = 1) {
+    showReaction(true, combo);
+  }
+
+  function encourageWrong() {
+    showReaction(false);
   }
 
   function createScoreboard() {
@@ -237,6 +259,7 @@
     nowMs,
     beep,
     celebrateCorrect,
+    encourageWrong,
     createScoreboard,
     mountNumpad,
     showFatalError,

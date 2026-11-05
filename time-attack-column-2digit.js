@@ -11,7 +11,7 @@ const {
   startTicker,
   nowMs,
   beep,
-  celebrateCorrect, createScoreboard,
+  celebrateCorrect, encourageWrong, createScoreboard,
   createTransition
 } = common;
 
@@ -252,6 +252,7 @@ function submit() {
 
   state.mistakes += 1;
   score.record(false);
+  encourageWrong();
   if (parsed.value === q.answer && parsed.carry !== q.carry) {
     feedback.textContent = "くりが ちがうよ！";
   } else {

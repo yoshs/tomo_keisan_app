@@ -2,7 +2,7 @@ try {
 const common = window.TomoCommon;
 if (!common) throw new Error("common.js が読み込めませんでした");
 
-const { $, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect, createScoreboard } = common;
+const { $, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect, encourageWrong, createScoreboard } = common;
 
 const score = createScoreboard();
 
@@ -306,6 +306,7 @@ function maybeJudge() {
 
   state.ng += 1;
   score.record(false);
+  encourageWrong();
   updateHeader();
   setFeedback("ちがうよ。もういちど！", false);
   beep(false);

@@ -1,6 +1,6 @@
 (() => {
   "use strict";
-  const { $, clampInt, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect, createScoreboard, mountNumpad, createTransition } = window.TomoCommon;
+  const { $, clampInt, toHalfWidthDigits, randInt, pickOne, beep, celebrateCorrect, encourageWrong, createScoreboard, mountNumpad, createTransition } = window.TomoCommon;
   const STORAGE_KEY = "tomo_keisan_settings_v1";
   const transition = createTransition();
   const score = createScoreboard();
@@ -250,6 +250,7 @@
       feedback.classList.add("ok");
     } else {
       score.record(false);
+      encourageWrong();
       feedback.textContent = `ざんねん… こたえは ${q.answer}`;
       feedback.classList.add("ng");
       quizState.mistakes.push({

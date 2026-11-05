@@ -674,9 +674,32 @@ input {
 }
 
 .celebration-mascot {
+  position: relative;
   font-size: 64px;
   line-height: 1.1;
   animation: celebration-bounce 700ms ease-out both;
+}
+
+.encouragement-face {
+  position: absolute;
+  right: -8px;
+  bottom: -2px;
+  font-size: 30px;
+}
+
+.is-encouragement .celebration-mascot {
+  animation-name: encouragement-nod;
+}
+
+.is-encouragement .celebration-praise {
+  background: #eef4ff;
+  color: #375b85;
+}
+
+@keyframes encouragement-nod {
+  0% { opacity: 0; transform: translateY(-8px) rotate(-8deg); }
+  30%, 75% { opacity: 1; transform: translateY(4px) rotate(-5deg); }
+  100% { opacity: 0; transform: translateY(8px) rotate(0); }
 }
 
 .celebration-praise {
@@ -756,6 +779,7 @@ input {
 
 @media (prefers-reduced-motion: reduce) {
   .celebration-mascot,
+  .is-encouragement .celebration-mascot,
   .celebration-praise,
   .celebration-combo {
     animation: none;

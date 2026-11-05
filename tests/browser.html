@@ -30,8 +30,17 @@ function keypad(page, value) {
 function celebrationVisible(page) {
   const effect = page.d.querySelector(".correct-celebration");
   assert(effect && !effect.hidden, "正解アニメーションを表示");
+  assert(!effect.classList.contains("is-encouragement"), "正解時はお祝いの演出");
   assert(page.frame.contentWindow.getComputedStyle(effect).pointerEvents === "none", "アニメーションが入力を妨げない");
   assert(page.d.querySelectorAll(".correct-celebration").length === 1, "アニメーションの要素を再利用");
+}
+function encouragementVisible(page) {
+  const effect = page.d.querySelector(".correct-celebration.is-encouragement");
+  assert(effect && !effect.hidden, "不正解時に励ます演出");
+  assert(effect.querySelector(".encouragement-face"), "残念そうな表情");
+  assert(effect.querySelector(".celebration-praise").textContent.length > 0, "励ましの言葉");
+  assert(!effect.querySelector(".celebration-combo"), "不正解時は加点やコンボを表示しない");
+  assert(page.frame.contentWindow.getComputedStyle(effect).pointerEvents === "none", "再回答を妨げない");
 }
 function liveScore(page, points, combo) {
   assert(page.$("livePoints").textContent === String(points), `得点は${points}`);
@@ -63,7 +72,7 @@ async function timed(name, options = {}) {
   input(p, "answerInput", 99999);
   liveScore(p, -50, 0);
   assert(p.$("mistakes").textContent === "1", "ミスを1回カウント");
-  assert(!p.d.querySelector(".correct-celebration"), "間違いではアニメーションを表示しない");
+  encouragementVisible(p);
   keypad(p, answer(p.$("problemText").textContent));
   celebrationVisible(p);
   liveScore(p, 60, 1);
@@ -81,6 +90,7 @@ async function timed(name, options = {}) {
     if (i === 2) {
       input(p, "answerInput", 99999);
       liveScore(p, 180, 0);
+      encouragementVisible(p);
     }
     if (i === 0) {
       const value = String(answer(text));
@@ -114,6 +124,7 @@ async function practice() {
     keypad(p, answer(p.$("problemText").textContent) + (i === 0 ? 1 : 0));
     p.$("submitBtn").click();
     p.$("submitBtn").click();
+    if (i === 0) encouragementVisible(p);
     await pause(700);
   }
   finalScore(p, 1300, 9);
@@ -152,6 +163,7 @@ async function finishColumn(p) {
       input(p, "ansOnes", (value + 1) % 10);
       input(p, "ansTens", Math.floor(value / 10));
       liveScore(p, 180, 0);
+      encouragementVisible(p);
       p.d.querySelector('[data-action="clear"]').click();
       if (add ? a % 10 + b % 10 >= 10 : a % 10 < b % 10) p.$(add ? "carryPlusBtn" : "carryMinusBtn").click();
     }
@@ -177,6 +189,7 @@ async function area(mode) {
       keypad(p, t); keypad(p, y);
       input(p, "areaInput", t * y + 1);
       liveScore(p, 180, 0);
+      encouragementVisible(p);
     }
     keypad(p, t);
     assert(p.d.activeElement === p.$("yokoInput"), "縦から横へ移動");
