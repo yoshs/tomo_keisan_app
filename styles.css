@@ -796,3 +796,40 @@ input {
     display: none;
   }
 }
+
+/* 淡い柄はカードの外側に表示し、問題の読みやすさを保つ。 */
+body {
+  min-height: 100vh;
+}
+
+:root[data-background="dots"] body {
+  background-color: #f3faf6;
+  background-image: radial-gradient(circle, #c6e1d2 2px, transparent 3px), radial-gradient(circle, #e6d8bb 2px, transparent 3px);
+  background-size: 40px 40px;
+  background-position: 0 0, 20px 20px;
+}
+
+:root[data-background="gingham"] body {
+  background-color: #fff9f2;
+  background-image: repeating-linear-gradient(0deg, #f4d9bd45 0 14px, transparent 14px 28px), repeating-linear-gradient(90deg, #f4d9bd45 0 14px, transparent 14px 28px);
+}
+
+:root[data-background="stars"] body {
+  background-color: #f5f4ff;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2272%22%20height%3D%2272%22%20viewBox%3D%220%200%2072%2072%22%3E%3Cpath%20d%3D%22m18%208%203%207%208%201-6%205%202%208-7-4-7%204%202-8-6-5%208-1z%22%20fill%3D%22%23c8b9ed%22%20opacity%3D%22.45%22%2F%3E%3Cpath%20d%3D%22m55%2042%202%205%206%201-4%204%201%206-5-3-5%203%201-6-4-4%206-1z%22%20fill%3D%22%23ead6a2%22%20opacity%3D%22.5%22%2F%3E%3C%2Fsvg%3E");
+}
+
+:root[data-background="hearts"] body {
+  background-color: #fff5f8;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2272%22%20height%3D%2272%22%20viewBox%3D%220%200%2072%2072%22%3E%3Cpath%20d%3D%22M12%2018C1%2010%207%201%2014%207c7-6%2013%203%202%2011l-2%202z%22%20fill%3D%22%23eeb8cc%22%20opacity%3D%22.4%22%2F%3E%3Cpath%20d%3D%22M48%2053c-11-8-5-17%202-11%207-6%2013%203%202%2011l-2%202z%22%20fill%3D%22%23d6c2eb%22%20opacity%3D%22.35%22%2F%3E%3C%2Fsvg%3E");
+}
+
+:root[data-background="flowers"] body {
+  background-color: #fffaf1;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2272%22%20height%3D%2272%22%20viewBox%3D%220%200%2072%2072%22%3E%3Cg%20fill%3D%22%23e6b6c9%22%20opacity%3D%22.4%22%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2212%22%20r%3D%226%22%2F%3E%3Ccircle%20cx%3D%2228%22%20cy%3D%2220%22%20r%3D%226%22%2F%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2228%22%20r%3D%226%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2220%22%20r%3D%226%22%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2220%22%20r%3D%224%22%20fill%3D%22%23efdaa3%22%2F%3E%3Cg%20fill%3D%22%23bddbc6%22%20opacity%3D%22.45%22%3E%3Cellipse%20cx%3D%2250%22%20cy%3D%2251%22%20rx%3D%228%22%20ry%3D%224%22%20transform%3D%22rotate%28-35%2050%2051%29%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+:root[data-background="clouds"] body {
+  background-color: #f1f9ff;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2272%22%20height%3D%2272%22%20viewBox%3D%220%200%2072%2072%22%3E%3Cpath%20d%3D%22M9%2028a7%207%200%200%201%201-14%2010%2010%200%200%201%2019-2%208%208%200%200%201%201%2016z%22%20fill%3D%22%23c4deef%22%20opacity%3D%22.45%22%2F%3E%3Ccircle%20cx%3D%2253%22%20cy%3D%2251%22%20r%3D%226%22%20fill%3D%22%23f4dfa7%22%20opacity%3D%22.55%22%2F%3E%3C%2Fsvg%3E");
+}

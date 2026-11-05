@@ -75,7 +75,8 @@ async function timed(name, options = {}) {
   encouragementVisible(p);
   keypad(p, answer(p.$("problemText").textContent));
   celebrationVisible(p);
-  liveScore(p, 60, 1);
+  liveScore(p, 50, 0);
+  assert(!p.d.querySelector(".celebration-praise").textContent.includes("コンボ"), "1回目の正解ではコンボ演出なし");
   p.$("submitBtn").click();
   p.$("restartBtn").click();
   await pause(300);
@@ -89,19 +90,22 @@ async function timed(name, options = {}) {
     assert(p.$("progress").textContent === `${i + 1} / ${count}`, "進捗");
     if (i === 2) {
       input(p, "answerInput", 99999);
-      liveScore(p, 180, 0);
+      liveScore(p, 160, 0);
       encouragementVisible(p);
     }
     if (i === 0) {
       const value = String(answer(text));
       input(p, "answerInput", value.replace(/[0-9]/g, x => String.fromCharCode(x.charCodeAt(0) + 0xfee0)));
     } else keypad(p, answer(text));
+    if (i === 0) liveScore(p, 100, 0);
+    if (i === 1) liveScore(p, 210, 1);
+    if (i === 2) liveScore(p, 260, 0);
     p.$("submitBtn").click();
     await pause(250);
   }
   assert(!p.$("screen-result").classList.contains("hidden"), "最後まで完了");
   assert(p.$("resultDetail").textContent === "ミス 1", "二重採点や余分なミスなし");
-  finalScore(p, 230 + 100 * (count - 2) + 5 * (count - 2) * (count - 1) - 50, count - 2);
+  finalScore(p, 210 + 100 * (count - 2) + 5 * (count - 2) * (count - 3) - 50, count - 3);
   if (name === "time-attack-kuku") assert(seen.size === 20, "九九の重複なし");
   p.$("againBtn").click();
   assert(p.$("progress").textContent.startsWith("1 /"), "もういちど");
@@ -127,7 +131,7 @@ async function practice() {
     if (i === 0) encouragementVisible(p);
     await pause(700);
   }
-  finalScore(p, 1300, 9);
+  finalScore(p, 1210, 8);
   assert(p.$("mistakeList").children.length === 1, "間違えた問題の振り返り");
   p.$("backBtn").click();
   assert(!p.$("screen-setup").classList.contains("hidden"), "設定に戻る");
@@ -162,7 +166,7 @@ async function finishColumn(p) {
     if (i === 2) {
       input(p, "ansOnes", (value + 1) % 10);
       input(p, "ansTens", Math.floor(value / 10));
-      liveScore(p, 180, 0);
+      liveScore(p, 160, 0);
       encouragementVisible(p);
       p.d.querySelector('[data-action="clear"]').click();
       if (add ? a % 10 + b % 10 >= 10 : a % 10 < b % 10) p.$(add ? "carryPlusBtn" : "carryMinusBtn").click();
@@ -174,7 +178,7 @@ async function finishColumn(p) {
   }
   assert(!p.$("screen-result").classList.contains("hidden"), "筆算を完了");
   assert(p.$("resultDetail").textContent === "ミス 1", "筆算の採点");
-  finalScore(p, 3690, 18);
+  finalScore(p, 3490, 17);
   p.frame.remove();
 }
 async function area(mode) {
@@ -188,7 +192,7 @@ async function area(mode) {
     if (i === 2) {
       keypad(p, t); keypad(p, y);
       input(p, "areaInput", t * y + 1);
-      liveScore(p, 180, 0);
+      liveScore(p, 160, 0);
       encouragementVisible(p);
     }
     keypad(p, t);
@@ -203,7 +207,7 @@ async function area(mode) {
     p.$("nextBtn").click();
   }
   assert(p.$("resultSummary").textContent === "10", "面積を完了");
-  finalScore(p, 1340, 8);
+  finalScore(p, 1240, 7);
   p.frame.remove();
 }
 async function areaExamples() {
@@ -347,10 +351,10 @@ async function mascotsAndEndlessScore() {
   const t = Number(p.$("labelTate").textContent.match(/\d+/)[0]);
   const y = Number(p.$("labelYoko").textContent.match(/\d+/)[0]);
   keypad(p, t); keypad(p, y); keypad(p, t * y);
-  liveScore(p, 110, 1);
+  liveScore(p, 100, 0);
   p.$("finishBtn").click();
   assert(!p.$("screen-result").classList.contains("hidden"), "むげん練習も結果を表示");
-  finalScore(p, 110, 1);
+  finalScore(p, 100, 0);
   p.$("againBtn").click();
   liveScore(p, 0, 0);
   finalScore(p, 0, 0);
@@ -391,6 +395,25 @@ async function unavailableStorage() {
   assert(!d.getElementById("screen-quiz").classList.contains("hidden"), "保存が使えなくても開始");
   p.frame.remove();
 }
+async function backgrounds() {
+  const themes = ["dots", "stars", "hearts", "flowers", "clouds", "gingham"];
+  for (const name of ["index", "practice", "time-attack-addsub", "time-attack-kuku", "time-attack-mix-add-kuku", "time-attack-column-2digit", "area-rectangle"]) {
+    const p = await openPage(name, 320);
+    const theme = p.d.documentElement.dataset.background;
+    assert(themes.includes(theme), "全ページに背景柄を設定");
+    const ready = new Promise(resolve => p.frame.onload = resolve);
+    p.frame.contentWindow.location.reload();
+    await ready;
+    const d = p.frame.contentDocument;
+    assert(themes.includes(d.documentElement.dataset.background) && d.documentElement.dataset.background !== theme, "開き直すと前回と異なる柄");
+    for (const value of themes) {
+      d.documentElement.dataset.background = value;
+      assert(p.frame.contentWindow.getComputedStyle(d.body).backgroundImage !== "none", "6種類の柄が表示できる");
+      noOverflow({ d }, 320);
+    }
+    p.frame.remove();
+  }
+}
 async function layouts() {
   for (const width of [320, 360, 375, 390, 414, 540, 768]) {
     for (const name of ["index", "practice", "time-attack-addsub", "time-attack-kuku", "time-attack-mix-add-kuku", "time-attack-column-2digit", "area-rectangle"]) {
@@ -403,6 +426,7 @@ async function layouts() {
 }
 (async () => {
   const checks = [
+    ["6種類の背景柄と開き直した際の切り替え", backgrounds],
     ["全ページの表示（320〜768px）", layouts],
     ["たし算20問", () => timed("time-attack-addsub", { mode: "add", count: "20", zero: "none" })],
     ["ひき算30問", () => timed("time-attack-addsub", { mode: "sub", count: "30", difficulty: "2", zero: "many" })],

@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>タイムアタック① たし算/ひき算（20〜45もん）</title>
-    <link rel="stylesheet" href="./styles.css?v=20261105-v13" />
+    <link rel="stylesheet" href="./styles.css?v=20261105-patterns1" />
+    <script src="./background.js?v=20261105-patterns1" defer></script>
   </head>
   <body>
     <main class="container">
@@ -12,7 +13,7 @@
         <h1 class="title">タイムアタック①</h1>
         <p class="subtitle">たし算 / ひき算 / まぜる（20・30・45もん）</p>
         <nav class="top-nav">
-          <a class="link" href="./index.html">メニューへ</a>
+          <a class="link" href="./index.html?v=1.3">メニューへ</a>
         </nav>
       </header>
 
@@ -69,7 +70,7 @@
         <div class="actions">
           <button id="startBtn" class="btn btn-primary">スタート</button>
         </div>
-        <p class="hint">せいかいで100てん×コンボばいりつ！ 1コンボは1.1ばい、2コンボは1.2ばい。まちがえると−50てん。</p>
+        <p class="hint">せいかいで100てん！ 2かいれんぞくで1コンボ（1.1ばい）、3かいで2コンボ（1.2ばい）。まちがえると−50てん。</p>
         <p class="hint">画面のテンキーで こたえてね。</p>
       </section>
 
@@ -147,7 +148,7 @@
 
         <div class="actions">
           <button id="againBtn" class="btn btn-primary">もういちど</button>
-          <a class="btn btn-ghost" href="./index.html">メニューへ</a>
+          <a class="btn btn-ghost" href="./index.html?v=1.3">メニューへ</a>
         </div>
       </section>
 
@@ -171,7 +172,7 @@
         }
       }
     </script>
-    <script src="./common.js?v=20261105-v13" onerror="__scriptLoadError('common.js')"></script>
+    <script src="./common.js?v=20261105-combofix" onerror="__scriptLoadError('common.js')"></script>
     <script>
       if (!window.TomoCommon) {
         document.body.insertAdjacentHTML(

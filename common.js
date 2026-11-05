@@ -86,7 +86,7 @@
   let lastCheer;
   let lastEncouragement;
   const encouragements = ["おしい！", "もういっかい！", "だいじょうぶ！", "ゆっくりでいいよ！", "つぎはできるよ！", "あきらめないで！", "いっしょにがんばろう！", "あとすこし！", "もういちどかんがえよう！", "おうえんしてるよ！"];
-  function showReaction(correct, combo = 1) {
+  function showReaction(correct, combo = 0) {
     if (!celebration) {
       celebration = document.createElement("div");
       celebration.className = "correct-celebration";
@@ -124,14 +124,14 @@
     // 子要素を入れ替えて、連続正解でも一度ずつ再生する。
     const streak = document.createElement("span");
     streak.className = "celebration-combo";
-    streak.textContent = `${combo} コンボ！（＋${comboReward(combo)}てん）`;
+    streak.textContent = combo > 0 ? `${combo} コンボ！（＋${comboReward(combo)}てん）` : "＋100てん";
     if (correct) praise.appendChild(streak);
     celebration.replaceChildren(mascot, praise, ...stars);
     celebration.hidden = false;
     celebrationTimeout = window.setTimeout(() => { celebration.hidden = true; }, 1200);
   }
 
-  function celebrateCorrect(combo = 1) {
+  function celebrateCorrect(combo = 0) {
     showReaction(true, combo);
   }
 
@@ -141,6 +141,7 @@
 
   function createScoreboard() {
     let points = 0;
+    let streak = 0;
     let combo = 0;
     let maxCombo = 0;
     const pointsEl = $("livePoints");
@@ -157,13 +158,14 @@
     }
     return {
       reset() {
-        points = 0; combo = 0; maxCombo = 0;
+        points = 0; streak = 0; combo = 0; maxCombo = 0;
         if (celebration) celebration.hidden = true;
         window.clearTimeout(celebrationTimeout);
         render();
       },
       record(correct) {
-        combo = correct ? combo + 1 : 0;
+        streak = correct ? streak + 1 : 0;
+        combo = Math.max(0, streak - 1);
         points += correct ? comboReward(combo) : -50;
         maxCombo = Math.max(maxCombo, combo);
         render();
